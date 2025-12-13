@@ -1,0 +1,116 @@
+{
+    "schema_version": "2.0.0",
+    "domain": "calendar_sync",
+    "name": "Calendar Sync",
+    "version": "1.0.0",
+    "description": "Sync employee events, onboarding dates, and important dates with Google Calendar or Microsoft Outlook.",
+    "min_core_version": "2025.12.0",
+    "logo": "https://cdn-icons-png.flaticon.com/512/833/833593.png",
+    "documentation": "https://fanex-id.com/docs/integrations/calendar",
+    "source_url": "https://github.com/faneX-ID/integrations/tree/main/calendar-sync",
+    "codeowners": [
+        "@faneX-Team"
+    ],
+    "is_system": false,
+    "connection_type": "cloud",
+    "capabilities": [
+        "automation",
+        "scheduler"
+    ],
+    "implementations": {
+        "python": "integration.py"
+    },
+    "requirements": [
+        "requests>=2.28.0"
+    ],
+    "exposed_services": [
+        {
+            "name": "create_event",
+            "description": "Create a calendar event",
+            "schema": {
+                "title": {
+                    "type": "string",
+                    "description": "Event title"
+                },
+                "description": {
+                    "type": "string",
+                    "nullable": true,
+                    "description": "Event description"
+                },
+                "start_time": {
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "Event start time (ISO 8601)"
+                },
+                "end_time": {
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "Event end time (ISO 8601)"
+                },
+                "attendees": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "nullable": true,
+                    "description": "Attendee email addresses"
+                },
+                "location": {
+                    "type": "string",
+                    "nullable": true,
+                    "description": "Event location"
+                }
+            }
+        },
+        {
+            "name": "list_events",
+            "description": "List upcoming events",
+            "schema": {
+                "start_date": {
+                    "type": "string",
+                    "format": "date",
+                    "nullable": true,
+                    "description": "Start date for filtering (ISO 8601)"
+                },
+                "end_date": {
+                    "type": "string",
+                    "format": "date",
+                    "nullable": true,
+                    "description": "End date for filtering (ISO 8601)"
+                }
+            }
+        }
+    ],
+    "config_schema": {
+        "type": "object",
+        "properties": {
+            "provider": {
+                "type": "string",
+                "enum": ["google", "outlook"],
+                "title": "Calendar Provider",
+                "description": "Calendar service provider"
+            },
+            "calendar_id": {
+                "type": "string",
+                "title": "Calendar ID",
+                "description": "Calendar ID (for Google) or calendar name"
+            },
+            "api_key": {
+                "type": "string",
+                "format": "password",
+                "title": "API Key / Access Token",
+                "description": "API key or OAuth access token"
+            },
+            "timezone": {
+                "type": "string",
+                "title": "Timezone",
+                "description": "Timezone for events (e.g., Europe/Berlin)",
+                "default": "UTC"
+            }
+        },
+        "required": [
+            "provider",
+            "api_key"
+        ]
+    }
+}

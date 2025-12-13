@@ -9,6 +9,56 @@
             "repository": "https://github.com/faneX-ID/integrations",
             "type": "system",
             "download_url": "https://github.com/faneX-ID/integrations/raw/main/smtp-standard.zip"
+        },
+        {
+            "id": "slack-notifications",
+            "name": "Slack Notifications",
+            "description": "Send notifications and alerts to Slack channels via webhooks or API.",
+            "version": "1.0.0",
+            "author": "faneX-ID Team",
+            "repository": "https://github.com/faneX-ID/integrations",
+            "type": "custom",
+            "download_url": "https://github.com/faneX-ID/integrations/raw/main/slack-notifications.zip"
+        },
+        {
+            "id": "microsoft-teams",
+            "name": "Microsoft Teams",
+            "description": "Send notifications and alerts to Microsoft Teams channels via webhooks.",
+            "version": "1.0.0",
+            "author": "faneX-ID Team",
+            "repository": "https://github.com/faneX-ID/integrations",
+            "type": "custom",
+            "download_url": "https://github.com/faneX-ID/integrations/raw/main/microsoft-teams.zip"
+        },
+        {
+            "id": "jira-integration",
+            "name": "Jira Integration",
+            "description": "Create and manage Jira tickets for employee onboarding, IT requests, and workflow automation.",
+            "version": "1.0.0",
+            "author": "faneX-ID Team",
+            "repository": "https://github.com/faneX-ID/integrations",
+            "type": "custom",
+            "download_url": "https://github.com/faneX-ID/integrations/raw/main/jira-integration.zip"
+        },
+        {
+            "id": "webhook-generic",
+            "name": "Generic Webhook",
+            "description": "Send HTTP requests to any webhook endpoint for custom integrations and automations.",
+            "version": "1.0.0",
+            "author": "faneX-ID Team",
+            "repository": "https://github.com/faneX-ID/integrations",
+            "type": "custom",
+            "download_url": "https://github.com/faneX-ID/integrations/raw/main/webhook-generic.zip"
+        },
+        {
+            "id": "calendar-sync",
+            "name": "Calendar Sync",
+            "description": "Sync employee events, onboarding dates, and important dates with Google Calendar or Microsoft Outlook.",
+            "version": "1.0.0",
+            "author": "faneX-ID Team",
+            "repository": "https://github.com/faneX-ID/integrations",
+            "type": "custom",
+            "download_url": "https://github.com/faneX-ID/integrations/raw/main/calendar-sync.zip"
         }
     ]
 }

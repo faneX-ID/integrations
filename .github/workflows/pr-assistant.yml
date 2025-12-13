@@ -1,0 +1,246 @@
+name: PR Assistant
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+  checks: write
+  issues: write
+
+env:
+  REQUIRED_MANIFEST_VERSION: "2.0.0"
+  CURRENT_SCHEMA_VERSION: "2.0.0"
+
+jobs:
+  # =================================================================================
+  # JOB 1: PR Validation & Feedback
+  # Validates integration manifests, code, and structure
+  # =================================================================================
+  pr-validation:
+    if: github.event_name == 'pull_request' && github.event.action != 'closed'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - name: Install Dependencies
+        run: |
+          pip install jsonschema requests pyyaml
+
+      # --- 1. Validate addons.json ---
+      - name: 📋 Validate addons.json
+        run: |
+          python << 'EOF'
+          import json
+          import sys
+          from pathlib import Path
+
+          addons_json = Path("addons.json")
+          if not addons_json.exists():
+              print("❌ addons.json not found")
+              sys.exit(1)
+
+          with open(addons_json) as f:
+              data = json.load(f)
+
+          if "addons" not in data or not isinstance(data["addons"], list):
+              print("❌ addons.json must contain 'addons' array")
+              sys.exit(1)
+
+          print(f"✅ addons.json valid ({len(data['addons'])} addons)")
+          EOF
+
+      # --- 2. Validate Integration Manifests ---
+      - name: 📝 Validate Integration Manifests
+        run: |
+          python << 'EOF'
+          import json
+          import sys
+          from pathlib import Path
+          from jsonschema import validate, Draft7Validator
+
+          SCHEMA_URL = "https://raw.githubusercontent.com/faneX-ID/faneX-ID/main/docs/specs/integrations-manifest/schemas/integration-manifest.json"
+
+          try:
+              import requests
+              response = requests.get(SCHEMA_URL, timeout=10)
+              response.raise_for_status()
+              schema = response.json()
+          except Exception as e:
+              print(f"⚠️ Could not fetch schema from {SCHEMA_URL}, using local validation")
+              schema = {}  # Fallback to basic validation
+
+          validator = Draft7Validator(schema) if schema else None
+          errors = []
+          validated = 0
+
+          print("Validating integration manifests...")
+
+          for manifest_path in Path(".").rglob("*/manifest.json"):
+              # Skip root-level files
+              if manifest_path.parent == Path("."):
+                  continue
+
+              integration_dir = manifest_path.parent
+              integration_name = integration_dir.name
+
+              try:
+                  with open(manifest_path) as f:
+                      manifest = json.load(f)
+
+                  # Basic validation
+                  required_fields = ["schema_version", "domain", "name", "version", "description", "implementations"]
+                  for field in required_fields:
+                      if field not in manifest:
+                          errors.append(f"{integration_name}: missing required field '{field}'")
+                          continue
+
+                  # Schema version check
+                  schema_version = manifest.get("schema_version", "0.0.0")
+                  if schema_version != "2.0.0":
+                      errors.append(f"{integration_name}: schema_version must be 2.0.0, got {schema_version}")
+
+                  # Check implementations exist
+                  implementations = manifest.get("implementations", {})
+                  for lang, filename in implementations.items():
+                      impl_path = integration_dir / filename
+                      if not impl_path.exists():
+                          errors.append(f"{integration_name}: implementation file '{filename}' not found")
+
+                  # Check README exists
+                  readme_path = integration_dir / "README.md"
+                  if not readme_path.exists():
+                      errors.append(f"{integration_name}: README.md not found")
+
+                  # Schema validation if available
+                  if validator:
+                      validation_errors = list(validator.iter_errors(manifest))
+                      if validation_errors:
+                          for error in validation_errors:
+                              errors.append(f"{integration_name}: {error.message}")
+
+                  if not any(e.startswith(integration_name) for e in errors):
+                      validated += 1
+                      print(f"✅ {integration_name} valid")
+
+              except json.JSONDecodeError as e:
+                  errors.append(f"{integration_name}: Invalid JSON - {e}")
+              except Exception as e:
+                  errors.append(f"{integration_name}: {e}")
+
+          if errors:
+              print("\n❌ Errors found:")
+              for e in errors:
+                  print(f"  - {e}")
+              sys.exit(1)
+          else:
+              print(f"\n✅ All {validated} integration(s) valid.")
+          EOF
+
+      # --- 3. Check Code Quality ---
+      - name: 🔍 Check Python Code Quality
+        run: |
+          python << 'EOF'
+          import ast
+          import sys
+          from pathlib import Path
+
+          errors = []
+          checked = 0
+
+          for py_file in Path(".").rglob("integration.py"):
+              integration_name = py_file.parent.name
+              try:
+                  with open(py_file) as f:
+                      code = f.read()
+
+                  # Basic syntax check
+                  try:
+                      ast.parse(code)
+                      checked += 1
+                      print(f"✅ {integration_name}/integration.py syntax valid")
+                  except SyntaxError as e:
+                      errors.append(f"{integration_name}: Syntax error - {e}")
+
+              except Exception as e:
+                  errors.append(f"{integration_name}: Error reading file - {e}")
+
+          if errors:
+              print("\n❌ Code quality issues:")
+              for e in errors:
+                  print(f"  - {e}")
+              sys.exit(1)
+          else:
+              print(f"\n✅ All {checked} Python file(s) valid.")
+          EOF
+
+      # --- 4. Feedback Comment ---
+      - name: Feedback Comment
+        if: always()
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const outcome = '${{ job.status }}';
+            if (outcome === 'failure') {
+               github.rest.issues.createComment({
+                 issue_number: context.issue.number,
+                 owner: context.repo.owner,
+                 repo: context.repo.repo,
+                 body: "❌ **PR Validation Failed**\n\nPlease check:\n- Integration manifests are valid (schema_version 2.0.0)\n- All required files exist (manifest.json, integration.py, README.md)\n- Python code syntax is correct\n- addons.json is valid"
+               });
+            } else if (outcome === 'success') {
+               github.rest.issues.createComment({
+                 issue_number: context.issue.number,
+                 owner: context.repo.owner,
+                 repo: context.repo.repo,
+                 body: "✅ **PR Validation Passed**\n\nAll integration checks passed successfully!"
+               });
+            }
+
+  # =================================================================================
+  # JOB 2: Auto-Fix (if applicable)
+  # =================================================================================
+  auto-fix:
+    needs: pr-validation
+    if: failure() && github.event_name == 'pull_request' && github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.head_ref }}
+      - name: Auto-fix suggestions
+        run: |
+          echo "Auto-fix not available for integration repositories"
+          echo "Please fix issues manually based on validation feedback"
+
+  # =================================================================================
+  # JOB 3: Thank Contributor
+  # =================================================================================
+  thank-you:
+    if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v6
+        with:
+          script: |
+            const author = context.payload.pull_request.user.login;
+            const admins = ['FaserF', 'fabia', 'github-actions[bot]'];
+            if (admins.includes(author)) return;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `🎉 **Thank you @${author}!**\n\nYour contribution to the **faneX-ID Integrations** repository is valuable! 🚀`
+            });

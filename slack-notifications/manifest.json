@@ -1,0 +1,101 @@
+{
+    "schema_version": "2.0.0",
+    "domain": "slack_notifications",
+    "name": "Slack Notifications",
+    "version": "1.0.0",
+    "description": "Send notifications and alerts to Slack channels via webhooks or API.",
+    "min_core_version": "2025.12.0",
+    "logo": "https://a.slack-edge.com/80588/marketing/img/icons/icon_slack_hash_colored.png",
+    "documentation": "https://fanex-id.com/docs/integrations/slack",
+    "source_url": "https://github.com/faneX-ID/integrations/tree/main/slack-notifications",
+    "codeowners": [
+        "@faneX-Team"
+    ],
+    "is_system": false,
+    "connection_type": "cloud",
+    "capabilities": [
+        "notification",
+        "communication"
+    ],
+    "implementations": {
+        "python": "integration.py"
+    },
+    "requirements": [
+        "requests>=2.28.0"
+    ],
+    "exposed_services": [
+        {
+            "name": "send_message",
+            "description": "Send a message to a Slack channel",
+            "schema": {
+                "channel": {
+                    "type": "string",
+                    "description": "Slack channel name or ID"
+                },
+                "message": {
+                    "type": "string",
+                    "description": "Message text to send"
+                },
+                "username": {
+                    "type": "string",
+                    "nullable": true,
+                    "description": "Custom username for the bot"
+                },
+                "icon_emoji": {
+                    "type": "string",
+                    "nullable": true,
+                    "description": "Emoji icon for the message"
+                }
+            }
+        },
+        {
+            "name": "send_alert",
+            "description": "Send an alert with formatted message",
+            "schema": {
+                "channel": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "color": {
+                    "type": "string",
+                    "enum": [
+                        "good",
+                        "warning",
+                        "danger"
+                    ],
+                    "default": "warning"
+                }
+            }
+        }
+    ],
+    "config_schema": {
+        "type": "object",
+        "properties": {
+            "webhook_url": {
+                "type": "string",
+                "format": "uri",
+                "title": "Webhook URL",
+                "description": "Slack incoming webhook URL"
+            },
+            "api_token": {
+                "type": "string",
+                "format": "password",
+                "title": "API Token",
+                "description": "Slack Bot Token (optional, for advanced features)"
+            },
+            "default_channel": {
+                "type": "string",
+                "title": "Default Channel",
+                "description": "Default channel for notifications"
+            }
+        },
+        "required": [
+            "webhook_url"
+        ]
+    }
+}

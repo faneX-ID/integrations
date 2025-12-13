@@ -4,9 +4,9 @@
     "name": "SMTP Email Service",
     "version": "1.0.0",
     "description": "Standard SMTP Email integration for sending notifications.",
-    "min_core_version": "0.1.0",
+    "min_core_version": "2025.12.0",
     "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/64/SMTP_Logo.png/640px-SMTP_Logo.png",
-    "documentation": "https://fanex-id.com/docs/smtp",
+    "documentation": "https://fanex-id.com/docs/integrations/smtp",
     "source_url": "https://github.com/faneX-ID/integrations/tree/main/smtp-standard",
     "codeowners": [
         "@faneX-Team"
@@ -19,26 +19,58 @@
     "implementations": {
         "python": "integration.py"
     },
-    "requirements": [],
+    "requirements": [
+        "aiosmtplib>=5.0.0"
+    ],
+    "exposed_services": [
+        {
+            "name": "send_email",
+            "description": "Send email via SMTP",
+            "schema": {
+                "to": {
+                    "type": "string",
+                    "description": "Recipient email address"
+                },
+                "subject": {
+                    "type": "string",
+                    "description": "Email subject"
+                },
+                "body": {
+                    "type": "string",
+                    "description": "Email body"
+                }
+            }
+        }
+    ],
     "config_schema": {
         "type": "object",
         "properties": {
             "host": {
-                "type": "string"
+                "type": "string",
+                "title": "SMTP Host",
+                "description": "SMTP server hostname"
             },
             "port": {
                 "type": "integer",
+                "title": "SMTP Port",
+                "description": "SMTP port (usually 587 for TLS, 465 for SSL)",
                 "default": 587
             },
             "username": {
-                "type": "string"
+                "type": "string",
+                "title": "SMTP Username",
+                "description": "SMTP username (usually email address)"
             },
             "password": {
                 "type": "string",
-                "format": "password"
+                "format": "password",
+                "title": "SMTP Password",
+                "description": "SMTP password or app-specific password"
             },
             "use_tls": {
                 "type": "boolean",
+                "title": "Use TLS",
+                "description": "Enable TLS encryption (recommended)",
                 "default": true
             }
         },

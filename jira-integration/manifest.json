@@ -1,0 +1,118 @@
+{
+    "schema_version": "2.0.0",
+    "domain": "jira_integration",
+    "name": "Jira Integration",
+    "version": "1.0.0",
+    "description": "Create and manage Jira tickets for employee onboarding, IT requests, and workflow automation.",
+    "min_core_version": "2025.12.0",
+    "logo": "https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png",
+    "documentation": "https://fanex-id.com/docs/integrations/jira",
+    "source_url": "https://github.com/faneX-ID/integrations/tree/main/jira-integration",
+    "codeowners": [
+        "@faneX-Team"
+    ],
+    "is_system": false,
+    "connection_type": "cloud",
+    "capabilities": [
+        "automation",
+        "data_management"
+    ],
+    "implementations": {
+        "python": "integration.py"
+    },
+    "requirements": [
+        "requests>=2.28.0",
+        "jira>=3.5.0"
+    ],
+    "exposed_services": [
+        {
+            "name": "create_ticket",
+            "description": "Create a new Jira ticket",
+            "schema": {
+                "project_key": {
+                    "type": "string",
+                    "description": "Jira project key"
+                },
+                "issue_type": {
+                    "type": "string",
+                    "description": "Issue type (Task, Story, Bug, etc.)"
+                },
+                "summary": {
+                    "type": "string",
+                    "description": "Ticket summary/title"
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Ticket description"
+                },
+                "assignee": {
+                    "type": "string",
+                    "nullable": true,
+                    "description": "Assignee username or email"
+                },
+                "labels": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "nullable": true
+                }
+            }
+        },
+        {
+            "name": "get_ticket",
+            "description": "Get ticket information",
+            "schema": {
+                "ticket_key": {
+                    "type": "string",
+                    "description": "Jira ticket key (e.g., PROJ-123)"
+                }
+            }
+        },
+        {
+            "name": "update_ticket",
+            "description": "Update an existing ticket",
+            "schema": {
+                "ticket_key": {
+                    "type": "string"
+                },
+                "fields": {
+                    "type": "object",
+                    "description": "Fields to update"
+                }
+            }
+        }
+    ],
+    "config_schema": {
+        "type": "object",
+        "properties": {
+            "server_url": {
+                "type": "string",
+                "format": "uri",
+                "title": "Jira Server URL",
+                "description": "Base URL of your Jira instance"
+            },
+            "username": {
+                "type": "string",
+                "title": "Username",
+                "description": "Jira username or email"
+            },
+            "api_token": {
+                "type": "string",
+                "format": "password",
+                "title": "API Token",
+                "description": "Jira API token"
+            },
+            "default_project": {
+                "type": "string",
+                "title": "Default Project",
+                "description": "Default project key for ticket creation"
+            }
+        },
+        "required": [
+            "server_url",
+            "username",
+            "api_token"
+        ]
+    }
+}

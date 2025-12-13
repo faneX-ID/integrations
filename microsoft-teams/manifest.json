@@ -1,0 +1,82 @@
+{
+    "schema_version": "2.0.0",
+    "domain": "microsoft_teams",
+    "name": "Microsoft Teams",
+    "version": "1.0.0",
+    "description": "Send notifications and alerts to Microsoft Teams channels via webhooks.",
+    "min_core_version": "2025.12.0",
+    "logo": "https://docs.microsoft.com/en-us/media/logos/logo-ms-social.png",
+    "documentation": "https://fanex-id.com/docs/integrations/teams",
+    "source_url": "https://github.com/faneX-ID/integrations/tree/main/microsoft-teams",
+    "codeowners": [
+        "@faneX-Team"
+    ],
+    "is_system": false,
+    "connection_type": "cloud",
+    "capabilities": [
+        "notification",
+        "communication"
+    ],
+    "implementations": {
+        "python": "integration.py"
+    },
+    "requirements": [
+        "requests>=2.28.0"
+    ],
+    "exposed_services": [
+        {
+            "name": "send_message",
+            "description": "Send a message to a Teams channel",
+            "schema": {
+                "title": {
+                    "type": "string",
+                    "description": "Message title"
+                },
+                "text": {
+                    "type": "string",
+                    "description": "Message text"
+                },
+                "theme_color": {
+                    "type": "string",
+                    "nullable": true,
+                    "description": "Theme color (hex code)"
+                }
+            }
+        },
+        {
+            "name": "send_card",
+            "description": "Send an adaptive card to Teams",
+            "schema": {
+                "title": {
+                    "type": "string"
+                },
+                "sections": {
+                    "type": "array",
+                    "items": {
+                        "type": "object"
+                    }
+                }
+            }
+        }
+    ],
+    "config_schema": {
+        "type": "object",
+        "properties": {
+            "webhook_url": {
+                "type": "string",
+                "format": "uri",
+                "title": "Webhook URL",
+                "description": "Microsoft Teams incoming webhook URL"
+            },
+            "default_theme_color": {
+                "type": "string",
+                "title": "Default Theme Color",
+                "description": "Default theme color for messages (hex code)",
+                "default": "0078D4"
+            }
+        },
+        "required": [
+            "webhook_url"
+        ]
+    }
+}
