@@ -21,3 +21,7 @@ To utilize these integrations, ensure your faneX-ID instance is configured to us
 ## 🤝 Contributing
 
 We welcome contributions! Please refer to the [🧩 Integration Development Guide](https://github.com/faneX-ID/core/blob/main/INTEGRATION_DEV_GUIDE.md) before submitting Pull Requests.
+
+## 📝 License
+
+This project is licensed under the GNU Affero General Public License v3.0 (AGPL-3.0) - see the [LICENSE](LICENSE) file for details.
