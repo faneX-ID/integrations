@@ -1,0 +1,175 @@
+name: New Integration Request
+description: Request a new integration to be added
+title: "[Integration Request] "
+labels: ["integration", "enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for requesting a new integration! Please fill out all sections below.
+
+        **Note:** After submitting this issue, our bot will analyze your request and may automatically generate integration files if the integration is simple enough. For complex integrations, it will create a template that you can build upon.
+
+  - type: input
+    id: integration-name
+    attributes:
+      label: Integration Name
+      description: The name of the integration (e.g., "Slack", "Microsoft Teams", "Jira")
+      placeholder: e.g., Slack Notifications
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Integration Description
+      description: A clear description of what this integration does or should do.
+      placeholder: |
+        Example: Send notifications and alerts to Slack channels via webhooks or API.
+    validations:
+      required: true
+
+  - type: textarea
+    id: use-case
+    attributes:
+      label: Use Case
+      description: Describe the primary use case for this integration. What problem does it solve?
+      placeholder: |
+        Example:
+        - Send system alerts to Slack channels
+        - Notify teams about workflow completions
+        - Alert HR about new employee onboarding
+    validations:
+      required: true
+
+  - type: dropdown
+    id: connection-type
+    attributes:
+      label: Connection Type
+      description: How does this integration connect to the external service?
+      options:
+        - local - Runs on local system
+        - internal - Internal network connection
+        - cloud - Internet/cloud service
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: capabilities
+    attributes:
+      label: Capabilities
+      description: What capabilities does this integration provide? (Select all that apply)
+      options:
+        - label: notification - Sends notifications
+        - label: communication - Communication features
+        - label: user_management - User management
+        - label: data_management - Data management
+        - label: monitoring - Monitoring and alerts
+        - label: reporting - Reporting features
+        - label: automation - Automation features
+        - label: webhook - Webhook support
+        - label: api_gateway - API gateway functionality
+        - label: Other (specify in additional info)
+
+  - type: textarea
+    id: api-docs
+    attributes:
+      label: API Documentation
+      description: Link to API documentation or describe the API endpoints/methods needed
+      placeholder: |
+        Example: https://api.slack.com/methods/chat.postMessage
+        Or describe: REST API with POST /send endpoint
+    validations:
+      required: false
+
+  - type: textarea
+    id: authentication
+    attributes:
+      label: Authentication Method
+      description: How does this integration authenticate? (API key, OAuth, webhook URL, etc.)
+      placeholder: |
+        Example:
+        - Webhook URL (for incoming webhooks)
+        - API Token (for bot API)
+        - OAuth 2.0
+    validations:
+      required: true
+
+  - type: textarea
+    id: services
+    attributes:
+      label: Exposed Services
+      description: What services/functions should this integration expose? (e.g., send_message, create_ticket, sync_data)
+      placeholder: |
+        Example:
+        - send_message: Send a message to a channel
+        - send_alert: Send a formatted alert
+        - list_channels: List available channels
+    validations:
+      required: false
+
+  - type: textarea
+    id: config
+    attributes:
+      label: Configuration Options
+      description: What configuration options are needed? (e.g., API URL, credentials, default settings)
+      placeholder: |
+        Example:
+        - webhook_url (required): Slack webhook URL
+        - default_channel (optional): Default channel for notifications
+        - api_token (optional): Bot token for advanced features
+    validations:
+      required: false
+
+  - type: dropdown
+    id: complexity
+    attributes:
+      label: Estimated Complexity
+      description: How complex do you think this integration is?
+      options:
+        - Simple - Basic API calls, webhook support
+        - Medium - Multiple endpoints, some business logic
+        - Complex - Complex authentication, multiple services, advanced features
+        - Very Complex - Enterprise features, complex workflows
+    validations:
+      required: true
+
+  - type: textarea
+    id: examples
+    attributes:
+      label: Example Use Cases
+      description: Provide example workflows or use cases for this integration
+      placeholder: |
+        Example:
+        1. Employee Onboarding: Send notification when new employee is created
+        2. System Alerts: Send alerts when system errors occur
+        3. Workflow Completion: Notify team when workflow completes
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional-info
+    attributes:
+      label: Additional Information
+      description: Any additional information, links, or context that might be helpful
+      placeholder: |
+        - Links to documentation
+        - Example code or scripts
+        - Similar integrations for reference
+        - Any special requirements
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Checklist
+      options:
+        - label: I have searched existing issues to ensure this integration hasn't been requested before
+          required: true
+        - label: I have checked existing integrations for similar functionality
+          required: true
+        - label: I am willing to help test and provide feedback
+          required: false
+        - label: I can provide API credentials for testing (if needed)
+          required: false

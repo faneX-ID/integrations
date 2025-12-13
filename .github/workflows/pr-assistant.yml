@@ -14,8 +14,10 @@ permissions:
   issues: write
 
 env:
-  REQUIRED_MANIFEST_VERSION: "2.0.0"
-  CURRENT_SCHEMA_VERSION: "2.0.0"
+  # Source of Truth: faneX-ID main repository (separate GitHub repository)
+  # This workflow fetches version info from the main repository via HTTP
+  MAIN_REPO: "faneX-ID/core"
+  MAIN_BRANCH: "main"
 
 jobs:
   # =================================================================================
@@ -37,6 +39,48 @@ jobs:
       - name: Install Dependencies
         run: |
           pip install jsonschema requests pyyaml
+
+      # --- 0. Fetch Version Info from Main Repository (Source of Truth) ---
+      # Note: This is a separate GitHub repository, so we fetch via HTTP
+      # The versions.json is in the PUBLIC faneX-ID/faneX-ID repository, accessible to all repos
+      - name: 📥 Fetch Version Info from faneX-ID Main Repository
+        id: versions
+        run: |
+          python << 'EOF'
+          import json
+          import requests
+          import os
+
+          # Always use the main repository (faneX-ID/core)
+          # This works for both public and private dependent repositories
+          main_repo = 'faneX-ID/core'  # Main repository
+          main_branch = os.environ.get('MAIN_BRANCH', 'main')
+
+          # Public URL - accessible to all repositories (public and private)
+          versions_url = f"https://raw.githubusercontent.com/{main_repo}/{main_branch}/.github/versions.json"
+
+          try:
+              response = requests.get(versions_url, timeout=10)
+              response.raise_for_status()
+              versions = response.json()
+
+              # Set output variables
+              with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+                  f.write(f"schema_version={versions.get('manifest_schema_version', '2.0.0')}\n")
+                  f.write(f"required_version={versions.get('required_manifest_version', '2.0.0')}\n")
+                  f.write(f"schema_base_url={versions.get('schema_base_url', '')}\n")
+
+              print(f"✅ Fetched versions from public {main_repo} repository")
+              print(f"   Schema Version: {versions.get('manifest_schema_version')}")
+              print(f"   Required Version: {versions.get('required_manifest_version')}")
+          except Exception as e:
+              print(f"⚠️ Could not fetch versions from main repo: {e}")
+              print("   Using fallback values")
+              with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+                  f.write("schema_version=2.0.0\n")
+                  f.write("required_version=2.0.0\n")
+                  f.write("schema_base_url=\n")
+          EOF
 
       # --- 1. Validate addons.json ---
       - name: 📋 Validate addons.json
@@ -63,14 +107,25 @@ jobs:
 
       # --- 2. Validate Integration Manifests ---
       - name: 📝 Validate Integration Manifests
+        env:
+          SCHEMA_VERSION: ${{ steps.versions.outputs.schema_version }}
+          REQUIRED_VERSION: ${{ steps.versions.outputs.required_version }}
+          SCHEMA_BASE_URL: ${{ steps.versions.outputs.schema_base_url }}
         run: |
           python << 'EOF'
           import json
           import sys
+          import os
           from pathlib import Path
           from jsonschema import validate, Draft7Validator
 
-          SCHEMA_URL = "https://raw.githubusercontent.com/faneX-ID/faneX-ID/main/docs/specs/integrations-manifest/schemas/integration-manifest.json"
+          SCHEMA_BASE_URL = os.environ.get('SCHEMA_BASE_URL', '')
+          if SCHEMA_BASE_URL:
+              SCHEMA_URL = f"{SCHEMA_BASE_URL}/integration-manifest.json"
+          else:
+              SCHEMA_URL = "https://raw.githubusercontent.com/faneX-ID/core/main/docs/specs/integrations-manifest/schemas/integration-manifest.json"
+
+          REQUIRED_VERSION = os.environ.get('REQUIRED_VERSION', '2.0.0')
 
           try:
               import requests
@@ -106,10 +161,11 @@ jobs:
                           errors.append(f"{integration_name}: missing required field '{field}'")
                           continue
 
-                  # Schema version check
+                  # Schema version check (from main repo)
                   schema_version = manifest.get("schema_version", "0.0.0")
-                  if schema_version != "2.0.0":
-                      errors.append(f"{integration_name}: schema_version must be 2.0.0, got {schema_version}")
+                  required_version = os.environ.get('REQUIRED_VERSION', '2.0.0')
+                  if schema_version != required_version:
+                      errors.append(f"{integration_name}: schema_version must be {required_version}, got {schema_version}")
 
                   # Check implementations exist
                   implementations = manifest.get("implementations", {})
@@ -148,7 +204,72 @@ jobs:
               print(f"\n✅ All {validated} integration(s) valid.")
           EOF
 
-      # --- 3. Check Code Quality ---
+      # --- 3. Validate Quality Scores (if present) ---
+      - name: 📊 Validate Quality Scores
+        continue-on-error: true
+        run: |
+          python << 'EOF'
+          import json
+          import jsonschema
+          from pathlib import Path
+          import requests
+
+          # Fetch schema from main repo
+          schema_url = "https://raw.githubusercontent.com/faneX-ID/core/main/docs/specs/integrations-manifest/schemas/quality-score.json"
+          try:
+              response = requests.get(schema_url, timeout=10)
+              response.raise_for_status()
+              schema = json.loads(response.text)
+          except Exception as e:
+              print(f"⚠️  Could not fetch quality score schema: {e}")
+              exit(0)
+
+          errors = []
+          warnings = []
+
+          # Check all integrations
+          for manifest_path in Path(".").glob("*/manifest.json"):
+              integration_name = manifest_path.parent.name
+              quality_file = manifest_path.parent / "quality.json"
+
+              if quality_file.exists():
+                  try:
+                      with open(quality_file) as f:
+                          quality_data = json.load(f)
+
+                      # Validate against schema
+                      jsonschema.validate(instance=quality_data, schema=schema)
+
+                      # Check that quality.json is not manually edited (should have calculated_by)
+                      if quality_data.get("calculated_by") != "quality-calculator":
+                          warnings.append(f"{integration_name}: quality.json may have been manually edited")
+
+                      print(f"✅ {integration_name}: quality.json is valid ({quality_data.get('overall_score', 0):.1f}/100)")
+                  except jsonschema.ValidationError as e:
+                      errors.append(f"{integration_name}: quality.json validation failed - {e.message}")
+                      print(f"❌ {integration_name}: {e.message}")
+                  except Exception as e:
+                      errors.append(f"{integration_name}: Error reading quality.json - {str(e)}")
+                      print(f"❌ {integration_name}: {str(e)}")
+              else:
+                  # Quality file missing is not an error, just a note
+                  pass
+
+          if warnings:
+              print("\n⚠️  Warnings:")
+              for warning in warnings:
+                  print(f"   • {warning}")
+
+          if errors:
+              print("\n❌ Quality Score Validation Errors:")
+              for error in errors:
+                  print(f"   • {error}")
+              exit(1)
+          else:
+              print("\n✅ All quality scores are valid")
+          EOF
+
+      # --- 4. Check Code Quality ---
       - name: 🔍 Check Python Code Quality
         run: |
           python << 'EOF'

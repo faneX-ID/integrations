@@ -1,0 +1,127 @@
+name: PR Validation
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [main, master]
+
+permissions:
+  contents: read
+  pull-requests: write
+  checks: write
+
+jobs:
+  validate:
+    name: "🛡️ Integration Validation"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - name: Install Tools
+        run: |
+          pip install jsonschema requests pyyaml
+
+      - name: Validate Integration Manifests
+        run: |
+          python << 'EOF'
+          import json
+          import jsonschema
+          import sys
+          from pathlib import Path
+          import requests
+
+          # Fetch schema from main repo
+          schema_url = "https://raw.githubusercontent.com/faneX-ID/core/main/docs/specs/integrations-manifest/schemas/integration-manifest.json"
+          try:
+              response = requests.get(schema_url, timeout=10)
+              response.raise_for_status()
+              schema = json.loads(response.text)
+          except Exception as e:
+              print(f"⚠️  Could not fetch schema: {e}")
+              sys.exit(1)
+
+          errors = []
+          for manifest_path in Path(".").glob("*/manifest.json"):
+              integration_name = manifest_path.parent.name
+              try:
+                  with open(manifest_path) as f:
+                      manifest = json.load(f)
+                  jsonschema.validate(instance=manifest, schema=schema)
+                  print(f"✅ {integration_name} valid")
+              except jsonschema.ValidationError as e:
+                  errors.append(f"{integration_name}: {e.message}")
+                  print(f"❌ {integration_name}: {e.message}")
+
+          if errors:
+              print("\n❌ Validation errors found:")
+              for e in errors:
+                  print(f"  - {e}")
+              sys.exit(1)
+          EOF
+
+      - name: Validate Python Syntax
+        run: |
+          python << 'EOF'
+          import ast
+          import sys
+          from pathlib import Path
+
+          errors = []
+          for py_file in Path(".").glob("*/integration.py"):
+              integration_name = py_file.parent.name
+              try:
+                  with open(py_file) as f:
+                      code = f.read()
+                  ast.parse(code)
+                  print(f"✅ {integration_name}/integration.py syntax valid")
+              except SyntaxError as e:
+                  errors.append(f"{integration_name}: {e}")
+                  print(f"❌ {integration_name}: {e}")
+
+          if errors:
+              print("\n❌ Syntax errors found:")
+              for e in errors:
+                  print(f"  - {e}")
+              sys.exit(1)
+          EOF
+
+      - name: Check Code Style
+        continue-on-error: true
+        run: |
+          pip install black isort
+          black . --check --extend-exclude="/(\.git|\.github|__pycache__|\.pytest_cache)/" || true
+          isort . --check --profile black --skip-glob=".github/*" || true
+
+  feedback:
+    needs: [validate]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Comment on PR
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const status = '${{ needs.validate.result }}';
+            
+            if (status === 'success') {
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: "✅ **PR Validation Passed!**\n\nAll integration checks passed successfully."
+              });
+            } else {
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: "❌ **PR Validation Failed**\n\nPlease check the logs and fix the issues before merging."
+              });
+            }
+

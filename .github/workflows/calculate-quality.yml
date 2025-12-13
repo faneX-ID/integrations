@@ -1,0 +1,276 @@
+name: Calculate Quality Scores
+
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - '**/integration.py'
+      - '**/manifest.json'
+      - '**/README.md'
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - '**/integration.py'
+      - '**/manifest.json'
+      - '**/README.md'
+  workflow_dispatch:
+  schedule:
+    # Run weekly to recalculate all scores
+    - cron: '0 0 * * 0'
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  calculate-quality:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - name: Install Dependencies
+        run: |
+          pip install ast-comments
+
+      - name: Fetch Quality Calculator Script
+        run: |
+          mkdir -p .github/scripts
+          curl -o .github/scripts/calculate_quality_score.py \
+            https://raw.githubusercontent.com/faneX-ID/core/main/.github/scripts/calculate_quality_score.py
+
+      - name: Fetch Quality Score Schema
+        run: |
+          mkdir -p .github/schemas
+          curl -o .github/schemas/quality-score.json \
+            https://raw.githubusercontent.com/faneX-ID/core/main/docs/specs/integrations-manifest/schemas/quality-score.json
+
+      - name: Calculate Quality Scores for All Integrations
+        id: calculate
+        run: |
+          python << 'EOF'
+          import json
+          import subprocess
+          from pathlib import Path
+          import sys
+
+          integrations_dir = Path(".")
+          results = {}
+          errors = []
+
+          # Find all integrations
+          for manifest_path in integrations_dir.glob("*/manifest.json"):
+              integration_name = manifest_path.parent.name
+
+              # Skip if it's not a valid integration directory
+              if integration_name.startswith('.') or integration_name == 'github':
+                  continue
+
+              print(f"\n{'='*60}")
+              print(f"Calculating quality for: {integration_name}")
+              print(f"{'='*60}")
+
+              try:
+                  # Run quality calculator
+                  result = subprocess.run(
+                      ["python", ".github/scripts/calculate_quality_score.py", str(manifest_path.parent)],
+                      capture_output=True,
+                      text=True,
+                      timeout=60
+                  )
+
+                  if result.returncode == 0:
+                      # Read generated quality.json
+                      quality_file = manifest_path.parent / "quality.json"
+                      if quality_file.exists():
+                          with open(quality_file) as f:
+                              quality_data = json.load(f)
+                          results[integration_name] = quality_data
+                          print(f"✅ {integration_name}: {quality_data['overall_score']}/100 ({quality_data['quality_scale']})")
+                      else:
+                          errors.append(f"{integration_name}: quality.json not generated")
+                  else:
+                      errors.append(f"{integration_name}: {result.stderr}")
+                      print(f"❌ Error: {result.stderr}")
+
+              except subprocess.TimeoutExpired:
+                  errors.append(f"{integration_name}: Calculation timeout")
+              except Exception as e:
+                  errors.append(f"{integration_name}: {str(e)}")
+
+          # Output summary
+          print(f"\n{'='*60}")
+          print("QUALITY SCORE SUMMARY")
+          print(f"{'='*60}")
+
+          if results:
+              # Sort by score
+              sorted_results = sorted(results.items(), key=lambda x: x[1]['overall_score'], reverse=True)
+
+              print("\n📊 Quality Scale Distribution:")
+              scale_counts = {}
+              for name, data in results.items():
+                  scale = data['quality_scale']
+                  scale_counts[scale] = scale_counts.get(scale, 0) + 1
+
+              for scale in ['platinum', 'gold', 'silver', 'bronze']:
+                  count = scale_counts.get(scale, 0)
+                  if count > 0:
+                      print(f"   {scale.capitalize()}: {count}")
+
+              print("\n🏆 Top Integrations:")
+              for name, data in sorted_results[:5]:
+                  print(f"   {name}: {data['overall_score']:.1f}/100 ({data['quality_scale']})")
+
+              if len(sorted_results) > 5:
+                  print(f"\n   ... and {len(sorted_results) - 5} more")
+
+          if errors:
+              print(f"\n⚠️  Errors ({len(errors)}):")
+              for error in errors[:10]:
+                  print(f"   • {error}")
+
+          # Set output
+          import os
+          output_file = os.environ.get('GITHUB_OUTPUT', '/dev/stdout')
+          with open(output_file, 'a') as f:
+              f.write(f"calculated_count={len(results)}\n")
+              f.write(f"error_count={len(errors)}\n")
+
+          sys.exit(0 if len(errors) == 0 else 1)
+          EOF
+        env:
+          GITHUB_OUTPUT: ${{ github.output }}
+
+      - name: Validate Quality JSON Files
+        run: |
+          python << 'EOF'
+          import json
+          import jsonschema
+          from pathlib import Path
+
+          # Load schema
+          schema_path = Path(".github/schemas/quality-score.json")
+          if not schema_path.exists():
+              print("⚠️  Schema not found, skipping validation")
+              exit(0)
+
+          with open(schema_path) as f:
+              schema = json.load(f)
+
+          errors = []
+          for quality_file in Path(".").glob("*/quality.json"):
+              integration_name = quality_file.parent.name
+              try:
+                  with open(quality_file) as f:
+                      data = json.load(f)
+                  jsonschema.validate(instance=data, schema=schema)
+                  print(f"✅ {integration_name}: quality.json is valid")
+              except jsonschema.ValidationError as e:
+                  errors.append(f"{integration_name}: {e.message}")
+                  print(f"❌ {integration_name}: Validation error - {e.message}")
+              except Exception as e:
+                  errors.append(f"{integration_name}: {str(e)}")
+                  print(f"❌ {integration_name}: Error - {str(e)}")
+
+          if errors:
+              print(f"\n❌ Found {len(errors)} validation errors")
+              exit(1)
+          else:
+              print(f"\n✅ All quality.json files are valid")
+          EOF
+
+      - name: Commit Quality Scores
+        if: github.event_name == 'push' || github.event_name == 'schedule'
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+
+          # Check if there are changes
+          if git diff --quiet; then
+            echo "No quality score changes to commit"
+          else
+            git add */quality.json
+            git commit -m "chore: update quality scores [skip ci]" || echo "No changes to commit"
+            git push || echo "Nothing to push"
+          fi
+
+      - name: Comment PR with Quality Results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+
+            // Find all quality.json files
+            const qualityFiles = [];
+            function findQualityFiles(dir) {
+              try {
+                const files = fs.readdirSync(dir);
+                for (const file of files) {
+                  const filePath = path.join(dir, file);
+                  try {
+                    const stat = fs.statSync(filePath);
+                    if (stat.isDirectory() && !file.startsWith('.') && file !== 'node_modules' && file !== '.github') {
+                      const qualityPath = path.join(filePath, 'quality.json');
+                      if (fs.existsSync(qualityPath)) {
+                        const qualityData = JSON.parse(fs.readFileSync(qualityPath, 'utf8'));
+                        qualityFiles.push({
+                          name: file,
+                          ...qualityData
+                        });
+                      }
+                      findQualityFiles(filePath);
+                    }
+                  } catch (e) {
+                    // Skip if can't read
+                  }
+                }
+              } catch (e) {
+                // Skip if can't read directory
+              }
+            }
+            findQualityFiles('.');
+
+            if (qualityFiles.length === 0) {
+              console.log('No quality files found to comment on');
+              return;
+            }
+
+            // Generate comment
+            let comment = '## 📊 Quality Score Results\n\n';
+            comment += 'Quality scores have been calculated for the following integrations:\n\n';
+            comment += '| Integration | Score | Scale |\n';
+            comment += '|-------------|-------|-------|\n';
+
+            qualityFiles.sort((a, b) => b.overall_score - a.overall_score);
+
+            for (const qf of qualityFiles) {
+              const scaleEmoji = {
+                'platinum': '🏆',
+                'gold': '🥇',
+                'silver': '🥈',
+                'bronze': '🥉'
+              }[qf.quality_scale] || '📊';
+
+              comment += `| ${qf.name} | ${qf.overall_score.toFixed(1)}/100 | ${scaleEmoji} ${qf.quality_scale} |\n`;
+            }
+
+            comment += '\n---\n';
+            comment += '*Quality scores are automatically calculated and cannot be manually edited.*\n';
+
+            // Post comment
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });

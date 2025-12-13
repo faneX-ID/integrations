@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 💬 Discussions
+    url: https://github.com/faneX-ID/integrations/discussions
+    about: Ask questions and discuss integrations
+  - name: 📚 Documentation
+    url: https://fanex-id.com/docs/integrations
+    about: Check integration documentation

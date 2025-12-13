@@ -1,0 +1,168 @@
+name: Housekeeping
+
+on:
+  schedule:
+    - cron: '0 3 * * 0' # Every Sunday at 03:00 UTC
+  workflow_dispatch: # Allow manual trigger
+
+permissions:
+  actions: write
+  contents: read
+
+env:
+  # Configuration
+  WORKFLOW_RUNS_RETENTION_DAYS: 90
+  KEEP_MAIN_BRANCH_RUNS: true
+
+jobs:
+  cleanup-workflow-runs:
+    name: Cleanup Old Workflow Runs
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete old workflow runs
+        uses: Mattraks/delete-workflow-runs@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.repository }}
+          retain_days: ${{ env.WORKFLOW_RUNS_RETENTION_DAYS }}
+          keep_minimum_runs: 5
+          delete_workflow_pattern: '*'
+          delete_run_by_conclusion_pattern: |
+            cancelled
+            skipped
+            failure
+
+      - name: Delete stale workflow runs (cancelled/skipped)
+        uses: Mattraks/delete-workflow-runs@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.repository }}
+          retain_days: 7 # Only 7 days for cancelled/skipped
+          keep_minimum_runs: 1
+          delete_run_by_conclusion_pattern: |
+            cancelled
+            skipped
+
+  cleanup-caches:
+    name: Cleanup Orphaned Caches
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cleanup caches for closed branches
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+
+            console.log('Fetching list of caches...');
+
+            // Get all caches
+            let caches = [];
+            let page = 1;
+            while (true) {
+              const response = await github.rest.actions.getActionsCacheList({
+                owner,
+                repo,
+                per_page: 100,
+                page: page
+              });
+
+              caches = caches.concat(response.data.actions_caches);
+              if (response.data.actions_caches.length < 100) break;
+              page++;
+            }
+
+            console.log(`Found ${caches.length} caches`);
+
+            if (caches.length === 0) {
+              console.log('No caches to clean up');
+              return;
+            }
+
+            // Get all branches
+            let branches = [];
+            page = 1;
+            while (true) {
+              const response = await github.rest.repos.listBranches({
+                owner,
+                repo,
+                per_page: 100,
+                page: page
+              });
+
+              branches = branches.concat(response.data.map(b => b.name));
+              if (response.data.length < 100) break;
+              page++;
+            }
+
+            console.log(`Found ${branches.length} branches`);
+
+            // Delete caches for non-existent branches
+            let deletedCount = 0;
+            for (const cache of caches) {
+              const ref = cache.ref;
+              let branchName = null;
+
+              if (ref.startsWith('refs/heads/')) {
+                branchName = ref.replace('refs/heads/', '');
+              } else if (ref.startsWith('refs/pull/')) {
+                const prNumber = ref.match(/refs\/pull\/(\d+)/)?.[1];
+                if (prNumber) {
+                  try {
+                    const pr = await github.rest.pulls.get({
+                      owner,
+                      repo,
+                      pull_number: parseInt(prNumber)
+                    });
+                    if (pr.data.state === 'closed') {
+                      console.log(`Deleting cache for closed PR #${prNumber}: ${cache.key}`);
+                      await github.rest.actions.deleteActionsCacheById({
+                        owner,
+                        repo,
+                        cache_id: cache.id
+                      });
+                      deletedCount++;
+                    }
+                  } catch (e) {
+                    console.log(`Deleting cache for missing PR: ${cache.key}`);
+                    await github.rest.actions.deleteActionsCacheById({
+                      owner,
+                      repo,
+                      cache_id: cache.id
+                    });
+                    deletedCount++;
+                  }
+                }
+                continue;
+              }
+
+              if (branchName && !branches.includes(branchName)) {
+                console.log(`Deleting cache for deleted branch '${branchName}': ${cache.key}`);
+                await github.rest.actions.deleteActionsCacheById({
+                  owner,
+                  repo,
+                  cache_id: cache.id
+                });
+                deletedCount++;
+              }
+            }
+
+            console.log(`Deleted ${deletedCount} orphaned caches`);
+
+  summary:
+    name: Generate Summary
+    needs: [cleanup-workflow-runs, cleanup-caches]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Create summary
+        run: |
+          echo "## 🧹 Housekeeping Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Task | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Cleanup Workflow Runs | ${{ needs.cleanup-workflow-runs.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Cleanup Caches | ${{ needs.cleanup-caches.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Run completed at $(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_STEP_SUMMARY
+

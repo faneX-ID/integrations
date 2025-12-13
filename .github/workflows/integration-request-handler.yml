@@ -1,0 +1,281 @@
+name: Integration Request Handler
+
+on:
+  issues:
+    types: [opened, edited]
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  handle-integration-request:
+    runs-on: ubuntu-latest
+    if: |
+      github.event.issue.labels[0].name == 'integration' ||
+      contains(github.event.issue.title, '[Integration Request]') ||
+      contains(github.event.issue.title, 'Integration Request')
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - name: Install Dependencies
+        run: |
+          pip install PyGithub requests pyyaml
+
+      - name: Fetch Integration Generator Script
+        run: |
+          mkdir -p .github/scripts
+          curl -o .github/scripts/generate_integration.py \
+            https://raw.githubusercontent.com/faneX-ID/core/main/.github/scripts/generate_integration.py
+
+      - name: Fetch Versions
+        run: |
+          mkdir -p .github
+          curl -o .github/versions.json \
+            https://raw.githubusercontent.com/faneX-ID/core/main/.github/versions.json
+
+      - name: Parse Issue and Generate Integration
+        id: generate
+        run: |
+          python << 'EOF'
+          import json
+          import sys
+          import os
+          from pathlib import Path
+          sys.path.insert(0, '.github/scripts')
+
+          from generate_integration import IntegrationGenerator, parse_issue_body
+
+          # Get issue body
+          issue_body = """${{ github.event.issue.body }}"""
+
+          # Parse issue data
+          issue_data = parse_issue_body(issue_body)
+
+          # Add issue number and title
+          issue_data['issue_number'] = ${{ github.event.issue.number }}
+          issue_data['issue_title'] = "${{ github.event.issue.title }}"
+          issue_data['issue_url'] = "${{ github.event.issue.html_url }}"
+
+          if not issue_data.get('integration-name'):
+              print("❌ Integration name not found in issue")
+              sys.exit(1)
+
+          # Generate integration files
+          versions_url = "https://raw.githubusercontent.com/faneX-ID/core/main/.github/versions.json"
+          generator = IntegrationGenerator(issue_data, versions_url)
+          files = generator.generate_all()
+
+          # Save files to output
+          output_dir = Path("generated_integration")
+          output_dir.mkdir(exist_ok=True)
+
+          domain = generator.generate_domain(issue_data.get('integration-name', 'new_integration'))
+          integration_dir = output_dir / domain
+          integration_dir.mkdir(exist_ok=True)
+
+          # Write files to integration directory (not generated_integration subdir)
+          integration_dir = Path(domain)
+          integration_dir.mkdir(exist_ok=True)
+
+          (integration_dir / "manifest.json").write_text(files['manifest.json'])
+          (integration_dir / "integration.py").write_text(files['integration.py'])
+          (integration_dir / "README.md").write_text(files['README.md'])
+
+          # Output metadata
+          metadata = {
+              'domain': domain,
+              'complexity': files['complexity'],
+              'can_auto_generate': files['can_auto_generate'],
+              'integration_name': issue_data.get('integration-name')
+          }
+
+          with open('.github/integration_metadata.json', 'w') as f:
+              json.dump(metadata, f)
+
+          print(f"✅ Generated integration: {domain}")
+          print(f"   Complexity: {files['complexity']}")
+          print(f"   Can auto-generate: {files['can_auto_generate']}")
+
+          # Set output
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+              f.write(f"domain={domain}\n")
+              f.write(f"complexity={files['complexity']}\n")
+              f.write(f"can_auto={str(files['can_auto_generate']).lower()}\n")
+              f.write(f"integration_name={issue_data.get('integration-name')}\n")
+          EOF
+        env:
+          GITHUB_OUTPUT: ${{ github.output }}
+
+      - name: Comment on Issue with Generation Status
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+
+            let comment = '## 🤖 Integration Generation Status\n\n';
+
+            const metadataPath = '.github/integration_metadata.json';
+            if (fs.existsSync(metadataPath)) {
+              const metadata = JSON.parse(fs.readFileSync(metadataPath, 'utf8'));
+
+              comment += `**Integration:** ${metadata.integration_name}\n`;
+              comment += `**Domain:** \`${metadata.domain}\`\n`;
+              comment += `**Complexity:** ${metadata.complexity}\n\n`;
+
+              if (metadata.can_auto_generate) {
+                comment += '✅ **This integration can be automatically generated!**\n\n';
+                comment += 'I will create a pull request with the complete integration files.\n';
+              } else {
+                comment += '⚠️ **This integration requires manual development.**\n\n';
+                comment += 'I have created a template that you can build upon. The template includes:\n';
+                comment += '- Basic structure and setup\n';
+                comment += '- Service placeholders\n';
+                comment += '- TODO comments for implementation\n\n';
+                comment += 'You will need to:\n';
+                comment += '1. Review the API documentation\n';
+                comment += '2. Implement the services\n';
+                comment += '3. Add proper error handling\n';
+                comment += '4. Write tests\n';
+              }
+            } else {
+              comment += '❌ Could not generate integration files. Please check the issue template was filled correctly.';
+            }
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
+      - name: Create Pull Request with Generated Integration
+        if: steps.generate.outputs.can_auto == 'true'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: feature/auto-integration-${{ steps.generate.outputs.domain }}
+          title: "feat: Add ${{ steps.generate.outputs.integration_name }} integration (auto-generated)"
+          body: |
+            This PR adds the **${{ steps.generate.outputs.integration_name }}** integration.
+
+            🤖 **Auto-generated from Issue #${{ github.event.issue.number }}**
+
+            This integration was automatically generated based on the integration request.
+
+            ## Generated Files
+
+            - `manifest.json` - Integration manifest (schema 2.0.0)
+            - `integration.py` - Python implementation
+            - `README.md` - Documentation
+
+            ## Next Steps
+
+            - [ ] Review the generated code
+            - [ ] Test the integration
+            - [ ] Update `addons.json` if needed
+            - [ ] Verify all services work correctly
+            - [ ] Add any missing features
+
+            Related to #${{ github.event.issue.number }}
+          commit-message: "feat: add ${{ steps.generate.outputs.integration_name }} integration (auto-generated from #${{ github.event.issue.number }})"
+          path: generated_integration
+          delete-branch: true
+          labels: |
+            integration
+            auto-generated
+          draft: false
+
+      - name: Create Pull Request with Template Integration
+        if: steps.generate.outputs.can_auto == 'false'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: feature/template-integration-${{ steps.generate.outputs.domain }}
+          title: "feat: Add ${{ steps.generate.outputs.integration_name }} integration template"
+          body: |
+            This PR adds a **template** for the **${{ steps.generate.outputs.integration_name }}** integration.
+
+            📋 **Template generated from Issue #${{ github.event.issue.number }}**
+
+            ⚠️ **This is a template that requires further development.**
+
+            ## Template Files
+
+            - `manifest.json` - Integration manifest (schema 2.0.0) - needs review
+            - `integration.py` - Template implementation with TODOs
+            - `README.md` - Basic documentation - needs expansion
+
+            ## Development Required
+
+            This integration needs manual development:
+
+            1. **Review API Documentation** - See original issue
+            2. **Implement Services** - Complete the TODO sections
+            3. **Add Error Handling** - Implement proper try/except blocks
+            4. **Add Logging** - Add appropriate logging statements
+            5. **Add Type Hints** - Add type annotations
+            6. **Write Tests** - Create unit tests
+            7. **Update Documentation** - Expand README with examples
+
+            ## Next Steps
+
+            - [ ] Review the template structure
+            - [ ] Implement authentication
+            - [ ] Implement all services
+            - [ ] Add error handling and logging
+            - [ ] Write tests
+            - [ ] Update documentation
+            - [ ] Test the integration
+            - [ ] Update `addons.json`
+
+            Related to #${{ github.event.issue.number }}
+          commit-message: "feat: add ${{ steps.generate.outputs.integration_name }} integration template (from #${{ github.event.issue.number }})"
+          delete-branch: true
+          labels: |
+            integration
+            template
+            help-wanted
+          draft: true
+
+      - name: Update Issue with PR Link
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            // Find the created PR
+            const { data: prs } = await github.rest.pulls.list({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              head: `${context.repo.owner}:feature/${'${{ steps.generate.outputs.can_auto }}' === 'true' ? 'auto' : 'template'}-integration-${{ steps.generate.outputs.domain }}`
+            });
+
+            if (prs.length > 0) {
+              const pr = prs[0];
+              const comment = `## 🔗 Pull Request Created\n\n${
+                '${{ steps.generate.outputs.can_auto }}' === 'true'
+                  ? '✅ **Complete integration generated!**\n\n'
+                  : '📋 **Template integration created!**\n\n'
+              }Pull Request: #${pr.number}\n\nPlease review and test the ${
+                '${{ steps.generate.outputs.can_auto }}' === 'true' ? 'generated' : 'template'
+              } integration.`;
+
+              await github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: comment
+              });
+            }
