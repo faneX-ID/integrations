@@ -4,5 +4,5 @@ contact_links:
     url: https://github.com/faneX-ID/integrations/discussions
     about: Ask questions and discuss integrations
   - name: 📚 Documentation
-    url: https://fanex-id.com/docs/integrations
-    about: Check integration documentation
+    url: https://fanex-id.github.io/
+    about: Check our documentation
