@@ -1,15 +1,52 @@
 {
-    "schema_version": "1.0.0",
+    "schema_version": "2.0.0",
     "domain": "smtp",
     "name": "SMTP Email Service",
     "version": "1.0.0",
+    "description": "Standard SMTP Email integration for sending notifications.",
     "min_core_version": "0.1.0",
     "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/64/SMTP_Logo.png/640px-SMTP_Logo.png",
     "documentation": "https://fanex-id.com/docs/smtp",
-    "codeowners": ["@faneX-Team"],
+    "source_url": "https://github.com/faneX-ID/integrations/tree/main/smtp-standard",
+    "codeowners": [
+        "@faneX-Team"
+    ],
     "is_system": true,
+    "connection_type": "cloud",
+    "capabilities": [
+        "mail_provider"
+    ],
     "implementations": {
         "python": "integration.py"
     },
-    "exposed_services": ["notify"]
+    "requirements": [],
+    "config_schema": {
+        "type": "object",
+        "properties": {
+            "host": {
+                "type": "string"
+            },
+            "port": {
+                "type": "integer",
+                "default": 587
+            },
+            "username": {
+                "type": "string"
+            },
+            "password": {
+                "type": "string",
+                "format": "password"
+            },
+            "use_tls": {
+                "type": "boolean",
+                "default": true
+            }
+        },
+        "required": [
+            "host",
+            "port",
+            "username",
+            "password"
+        ]
+    }
 }
