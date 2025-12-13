@@ -9,7 +9,7 @@ jobs:
   validate:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       # In a real environment, you would fetch core version from your environment or API.
       # Here we simulate fetching it from the core repo to ensure we check against latest compatible version.
