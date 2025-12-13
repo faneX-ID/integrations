@@ -1,0 +1,14 @@
+{
+    "addons": [
+        {
+            "id": "smtp-standard",
+            "name": "SMTP Email Service",
+            "description": "System integration for sending emails via SMTP.",
+            "version": "1.0.0",
+            "author": "faneX-ID Team",
+            "repository": "https://github.com/faneX-ID/integrations",
+            "type": "system",
+            "download_url": "https://github.com/faneX-ID/integrations/raw/main/smtp-standard.zip"
+        }
+    ]
+}

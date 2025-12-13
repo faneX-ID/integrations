@@ -1,0 +1,32 @@
+name: Addon Validation
+
+on:
+  push:
+    paths: [ "addons.json", "**/*.json", "**/*.py" ]
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # In a real environment, you would fetch core version from your environment or API.
+      # Here we simulate fetching it from the core repo to ensure we check against latest compatible version.
+      - name: Fetch Core Version
+        id: core_version
+        run: |
+          wget https://raw.githubusercontent.com/faneX-ID/core/main/backend/main.py -O backend_main.py
+          VERSION=$(grep 'version="' backend_main.py | head -n 1 | sed -n 's/.*version="\([^"]*\)".*/\1/p')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      # USAGE:
+      # In production: uses: faneX-ID/integration-validation@main
+      # In this monorepo demo: we point to the local path relative to checkout root
+      # For the requested "Final Polish", we set it to the requested production format
+      # assuming the user will move this to a real repo.
+      - name: Run Integration Validation
+        uses: faneX-ID/integration-validation@main
+        with:
+          core_version: ${{ steps.core_version.outputs.version }}
+          working_directory: '.'
