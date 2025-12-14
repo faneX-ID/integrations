@@ -205,3 +205,4 @@ class BitwardenIntegration(Integration):
             self.logger.error(f"Failed to get Bitwarden collections: {e}")
             raise
 
+

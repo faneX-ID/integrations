@@ -130,3 +130,4 @@ class MattermostIntegration(Integration):
             self.logger.error(f"Failed to get Mattermost user: {e}")
             raise
 
+

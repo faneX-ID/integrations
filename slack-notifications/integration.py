@@ -97,3 +97,4 @@ class SlackIntegration(Integration):
             self.logger.error(f"Failed to send Slack alert: {e}")
             raise
 
+

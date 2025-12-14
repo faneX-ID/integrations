@@ -100,3 +100,4 @@ class MicrosoftTeamsIntegration(Integration):
             self.logger.error(f"Failed to send Teams card: {e}")
             raise
 
+

@@ -34,3 +34,4 @@ jobs:
               body: `🎉 **Thank you @${author}!**\n\nYour contribution to the **faneX-ID Integrations** repository is valuable! 🚀`
             })
 
+

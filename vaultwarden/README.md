@@ -33,3 +33,4 @@ await service_registry.call("bitwarden.get_organization", {
 - All functionality is provided by the `bitwarden` integration
 - Configure the `bitwarden` integration with your Vaultwarden server URL
 
+

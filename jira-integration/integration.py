@@ -146,3 +146,4 @@ class JiraIntegration(Integration):
             self.logger.error(f"Failed to update Jira ticket: {e}")
             raise
 
+

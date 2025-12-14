@@ -170,3 +170,4 @@ class CalendarSyncIntegration(Integration):
             self.logger.error(f"Failed to list calendar events: {e}")
             raise
 
+

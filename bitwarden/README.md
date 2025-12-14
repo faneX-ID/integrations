@@ -57,3 +57,4 @@ await service_registry.call("bitwarden.create_collection", {
 - Supports both Bitwarden Cloud and self-hosted instances
 - For Vaultwarden (self-hosted alternative), use the vaultwarden helper integration which references this integration
 
+

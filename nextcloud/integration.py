@@ -130,3 +130,4 @@ class NextcloudIntegration(Integration):
             self.logger.error(f"Failed to get Nextcloud user: {e}")
             raise
 
+

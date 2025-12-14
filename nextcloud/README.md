@@ -48,3 +48,4 @@ await service_registry.call("nextcloud.create_share", {
 - Uses WebDAV for file operations and OCS API for sharing
 - App passwords are recommended for API access
 
+

@@ -56,3 +56,4 @@ await service_registry.call("wiki_js.search_pages", {
 - Wiki.js is an open-source wiki platform
 - Supports Markdown and other content formats
 
+

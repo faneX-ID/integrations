@@ -175,3 +175,4 @@ class OtoboIntegration(Integration):
             self.logger.error(f"Failed to add article to Otobo ticket: {e}")
             raise
 
+

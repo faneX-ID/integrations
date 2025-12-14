@@ -185,3 +185,4 @@ steps:
 - VM IDs can be obtained from the `list_vms` service
 - Power operations are asynchronous; the API returns immediately
 - Requires valid ESXi credentials with appropriate permissions
+

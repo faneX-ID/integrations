@@ -265,3 +265,4 @@ class ESXiIntegration(Integration):
         except Exception as e:
             self.logger.error(f"ESXi connection test failed: {e}")
             return {"success": False, "error": str(e)}
+

@@ -48,3 +48,4 @@ await service_registry.call("sosafe.get_user_status", {
 - This integration provides basic functionality based on available information
 - For technical details on the phishing report button, see: https://de.support.sosafe.de/adok/technische-details-zum-phishing-meldebutton
 
+

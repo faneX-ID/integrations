@@ -161,3 +161,4 @@ class WikiJSIntegration(Integration):
             self.logger.error(f"Failed to search Wiki.js pages: {e}")
             raise
 
+

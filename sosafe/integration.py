@@ -102,3 +102,4 @@ class SoSafeIntegration(Integration):
             self.logger.warning("SoSafe API endpoint may need adjustment. Please check SoSafe documentation.")
             raise
 
+

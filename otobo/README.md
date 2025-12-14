@@ -63,3 +63,4 @@ await service_registry.call("otobo.add_article", {
 - Requires Otobo REST API to be enabled
 - API authentication uses HTTP Basic Auth
 
+

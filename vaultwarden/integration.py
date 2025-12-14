@@ -18,3 +18,4 @@ class VaultwardenIntegration(Integration):
         # They redirect to the referenced integration
         return True
 
+
