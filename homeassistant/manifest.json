@@ -1,0 +1,126 @@
+{
+    "schema_version": "2.1.0",
+    "domain": "homeassistant",
+    "name": "Home Assistant",
+    "version": "1.0.0",
+    "description": "Integration for controlling and monitoring Home Assistant devices and services via REST API.",
+    "min_core_version": "2025.12.0",
+    "is_system": false,
+    "connection_type": "cloud",
+    "logo": "https://raw.githubusercontent.com/home-assistant/brands/master/core_integrations/homeassistant/icon.png",
+    "documentation": "https://fanex-id.com/docs/integrations/homeassistant",
+    "source_url": "https://github.com/faneX-ID/integrations/tree/main/homeassistant",
+    "codeowners": [
+        "@faneX-Team"
+    ],
+    "capabilities": [
+        "automation",
+        "monitoring",
+        "api_gateway"
+    ],
+    "implementations": {
+        "python": "integration.py"
+    },
+    "requirements": [
+        "requests>=2.28.0"
+    ],
+    "config_schema": {
+        "type": "object",
+        "properties": {
+            "base_url": {
+                "type": "string",
+                "format": "uri",
+                "title": "Home Assistant URL",
+                "description": "Base URL of your Home Assistant instance (e.g., https://homeassistant.local:8123)"
+            },
+            "access_token": {
+                "type": "string",
+                "format": "password",
+                "title": "Long-Lived Access Token",
+                "description": "Home Assistant long-lived access token (create in Profile > Long-Lived Access Tokens)"
+            },
+            "verify_ssl": {
+                "type": "boolean",
+                "default": true,
+                "title": "Verify SSL",
+                "description": "Verify SSL certificate (disable for self-signed certificates)"
+            }
+        },
+        "required": [
+            "base_url",
+            "access_token"
+        ]
+    },
+    "exposed_services": [
+        {
+            "name": "call_service",
+            "description": "Call a Home Assistant service",
+            "schema": {
+                "domain": {
+                    "type": "string",
+                    "description": "Service domain (e.g., 'light', 'switch', 'climate')"
+                },
+                "service": {
+                    "type": "string",
+                    "description": "Service name (e.g., 'turn_on', 'turn_off', 'set_temperature')"
+                },
+                "entity_id": {
+                    "type": "string",
+                    "description": "Entity ID (e.g., 'light.living_room')"
+                },
+                "service_data": {
+                    "type": "object",
+                    "description": "Additional service data",
+                    "nullable": true
+                }
+            }
+        },
+        {
+            "name": "get_state",
+            "description": "Get the state of a Home Assistant entity",
+            "schema": {
+                "entity_id": {
+                    "type": "string",
+                    "description": "Entity ID (e.g., 'light.living_room')"
+                }
+            }
+        },
+        {
+            "name": "get_states",
+            "description": "Get states of all or filtered Home Assistant entities",
+            "schema": {
+                "domain": {
+                    "type": "string",
+                    "description": "Filter by domain (e.g., 'light', 'switch')",
+                    "nullable": true
+                },
+                "entity_id": {
+                    "type": "string",
+                    "description": "Filter by entity ID pattern",
+                    "nullable": true
+                }
+            }
+        },
+        {
+            "name": "fire_event",
+            "description": "Fire a custom event in Home Assistant",
+            "schema": {
+                "event_type": {
+                    "type": "string",
+                    "description": "Event type name"
+                },
+                "event_data": {
+                    "type": "object",
+                    "description": "Event data",
+                    "nullable": true
+                }
+            }
+        },
+        {
+            "name": "test_connection",
+            "description": "Test connection to Home Assistant instance",
+            "schema": {}
+        }
+    ]
+}
+

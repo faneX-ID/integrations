@@ -38,7 +38,12 @@
                 },
                 "provider": {
                     "type": "string",
-                    "enum": ["gemini", "chatgpt", "azure", "auto"],
+                    "enum": [
+                        "gemini",
+                        "chatgpt",
+                        "azure",
+                        "auto"
+                    ],
                     "default": "auto",
                     "description": "AI provider to use (auto selects based on config)"
                 },
@@ -81,7 +86,11 @@
                 },
                 "provider": {
                     "type": "string",
-                    "enum": ["gemini", "chatgpt", "auto"],
+                    "enum": [
+                        "gemini",
+                        "chatgpt",
+                        "auto"
+                    ],
                     "default": "auto"
                 }
             }
@@ -101,7 +110,11 @@
                 },
                 "provider": {
                     "type": "string",
-                    "enum": ["gemini", "chatgpt", "auto"],
+                    "enum": [
+                        "gemini",
+                        "chatgpt",
+                        "auto"
+                    ],
                     "default": "auto"
                 }
             }
@@ -121,7 +134,11 @@
                 },
                 "provider": {
                     "type": "string",
-                    "enum": ["gemini", "chatgpt", "auto"],
+                    "enum": [
+                        "gemini",
+                        "chatgpt",
+                        "auto"
+                    ],
                     "default": "auto"
                 }
             }
@@ -132,7 +149,11 @@
         "properties": {
             "default_provider": {
                 "type": "string",
-                "enum": ["gemini", "chatgpt", "azure"],
+                "enum": [
+                    "gemini",
+                    "chatgpt",
+                    "azure"
+                ],
                 "default": "gemini",
                 "title": "Default AI Provider",
                 "description": "Default AI provider to use when 'auto' is selected"
