@@ -1,0 +1,84 @@
+{
+    "schema_version": "2.0.0",
+    "domain": "sosafe",
+    "name": "SoSafe",
+    "version": "1.0.0",
+    "description": "Integration with SoSafe security awareness platform API. Note: Public API documentation is limited. This integration provides basic functionality based on available information.",
+    "min_core_version": "2025.12.0",
+    "logo": "https://sosafe.de/favicon.ico",
+    "documentation": "https://fanex-id.com/docs/integrations/sosafe",
+    "source_url": "https://github.com/faneX-ID/integrations/tree/main/sosafe",
+    "codeowners": [
+        "@faneX-Team"
+    ],
+    "is_system": false,
+    "connection_type": "cloud",
+    "capabilities": [
+        "security",
+        "awareness"
+    ],
+    "implementations": {
+        "python": "integration.py"
+    },
+    "requirements": [
+        "requests>=2.28.0"
+    ],
+    "exposed_services": [
+        {
+            "name": "report_phishing",
+            "description": "Report a phishing attempt via SoSafe",
+            "schema": {
+                "url": {
+                    "type": "string",
+                    "format": "uri"
+                },
+                "sender": {
+                    "type": "string",
+                    "format": "email",
+                    "nullable": true
+                },
+                "description": {
+                    "type": "string",
+                    "nullable": true
+                }
+            }
+        },
+        {
+            "name": "get_user_status",
+            "description": "Get user security awareness status",
+            "schema": {
+                "user_email": {
+                    "type": "string",
+                    "format": "email"
+                }
+            }
+        }
+    ],
+    "config_schema": {
+        "type": "object",
+        "properties": {
+            "api_url": {
+                "type": "string",
+                "format": "uri",
+                "title": "API URL",
+                "description": "SoSafe API URL"
+            },
+            "api_key": {
+                "type": "string",
+                "format": "password",
+                "title": "API Key",
+                "description": "SoSafe API key"
+            },
+            "tenant_id": {
+                "type": "string",
+                "title": "Tenant ID",
+                "description": "SoSafe tenant ID"
+            }
+        },
+        "required": [
+            "api_url",
+            "api_key"
+        ]
+    }
+}
+

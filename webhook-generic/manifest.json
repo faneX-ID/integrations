@@ -1,5 +1,5 @@
 {
-    "schema_version": "2.0.0",
+    "schema_version": "2.1.0",
     "domain": "webhook_generic",
     "name": "Generic Webhook",
     "version": "1.0.0",
@@ -8,6 +8,32 @@
     "logo": "https://cdn-icons-png.flaticon.com/512/1828/1828817.png",
     "documentation": "https://fanex-id.com/docs/integrations/webhook",
     "source_url": "https://github.com/faneX-ID/integrations/tree/main/webhook-generic",
+    "ui_metadata": {
+        "implementation_badge": {
+            "python": {
+                "label": "Python",
+                "color": "3776ab",
+                "icon": "🐍"
+            },
+            "powershell": {
+                "label": "PowerShell",
+                "color": "012456",
+                "icon": "💻"
+            }
+        },
+        "implementation_info": {
+            "python": {
+                "file_extension": ".py",
+                "language": "Python",
+                "recommended_for": "All platforms, standard HTTP library"
+            },
+            "powershell": {
+                "file_extension": ".ps1",
+                "language": "PowerShell",
+                "recommended_for": "Windows and cross-platform PowerShell"
+            }
+        }
+    },
     "codeowners": [
         "@faneX-Team"
     ],
@@ -18,11 +44,22 @@
         "automation"
     ],
     "implementations": {
-        "python": "integration.py"
+        "python": {
+            "file": "integration.py",
+            "default": true,
+            "requirements": [
+                "requests>=2.28.0"
+            ],
+            "description": "Python implementation using requests library. Recommended for all platforms."
+        },
+        "powershell": {
+            "file": "integration.ps1",
+            "default": false,
+            "requirements": [],
+            "description": "PowerShell implementation using Invoke-WebRequest. Works on Windows and cross-platform PowerShell."
+        }
     },
-    "requirements": [
-        "requests>=2.28.0"
-    ],
+    "default_implementation": "python",
     "exposed_services": [
         {
             "name": "send_webhook",
@@ -35,7 +72,13 @@
                 },
                 "method": {
                     "type": "string",
-                    "enum": ["GET", "POST", "PUT", "PATCH", "DELETE"],
+                    "enum": [
+                        "GET",
+                        "POST",
+                        "PUT",
+                        "PATCH",
+                        "DELETE"
+                    ],
                     "default": "POST",
                     "description": "HTTP method"
                 },

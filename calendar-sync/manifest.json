@@ -86,7 +86,10 @@
         "properties": {
             "provider": {
                 "type": "string",
-                "enum": ["google", "outlook"],
+                "enum": [
+                    "google",
+                    "outlook"
+                ],
                 "title": "Calendar Provider",
                 "description": "Calendar service provider"
             },

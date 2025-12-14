@@ -152,3 +152,4 @@ actions:
 - Generic SMTP support
 - TLS/SSL encryption
 - Basic email sending
+

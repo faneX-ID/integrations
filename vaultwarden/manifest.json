@@ -1,0 +1,39 @@
+{
+    "schema_version": "2.1.0",
+    "domain": "vaultwarden",
+    "name": "Vaultwarden",
+    "version": "1.0.0",
+    "description": "Helper integration for Vaultwarden (self-hosted Bitwarden alternative). This integration references the bitwarden integration for all functionality, as Vaultwarden uses a Bitwarden-compatible API.",
+    "min_core_version": "2025.12.0",
+    "logo": "https://github.com/dani-garcia/vaultwarden/raw/main/resources/icon.png",
+    "documentation": "https://fanex-id.com/docs/integrations/vaultwarden",
+    "source_url": "https://github.com/faneX-ID/integrations/tree/main/vaultwarden",
+    "codeowners": [
+        "@faneX-Team"
+    ],
+    "is_system": false,
+    "is_helper": true,
+    "helper_reference": "bitwarden",
+    "connection_type": "cloud",
+    "capabilities": [
+        "password_management",
+        "secrets_management"
+    ],
+    "implementations": {
+        "python": "integration.py"
+    },
+    "requirements": [],
+    "exposed_services": [],
+    "config_schema": {
+        "type": "object",
+        "properties": {
+            "note": {
+                "type": "string",
+                "title": "Note",
+                "description": "This is a helper integration. All functionality is provided by the bitwarden integration. Configure the bitwarden integration with your Vaultwarden API URL.",
+                "default": "Vaultwarden uses a Bitwarden-compatible API. Configure the bitwarden integration with your Vaultwarden server URL in the api_url field."
+            }
+        }
+    }
+}
+

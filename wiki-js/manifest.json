@@ -1,0 +1,107 @@
+{
+    "schema_version": "2.0.0",
+    "domain": "wiki_js",
+    "name": "Wiki.js",
+    "version": "1.0.0",
+    "description": "Integration with Wiki.js API for managing content, users, and pages.",
+    "min_core_version": "2025.12.0",
+    "logo": "https://wiki.js.org/img/logo.png",
+    "documentation": "https://fanex-id.com/docs/integrations/wiki-js",
+    "source_url": "https://github.com/faneX-ID/integrations/tree/main/wiki-js",
+    "codeowners": [
+        "@faneX-Team"
+    ],
+    "is_system": false,
+    "connection_type": "cloud",
+    "capabilities": [
+        "documentation",
+        "content_management"
+    ],
+    "implementations": {
+        "python": "integration.py"
+    },
+    "requirements": [
+        "requests>=2.28.0"
+    ],
+    "exposed_services": [
+        {
+            "name": "create_page",
+            "description": "Create a new page",
+            "schema": {
+                "title": {
+                    "type": "string"
+                },
+                "content": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string",
+                    "nullable": true
+                }
+            }
+        },
+        {
+            "name": "get_page",
+            "description": "Get a page",
+            "schema": {
+                "page_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        {
+            "name": "update_page",
+            "description": "Update a page",
+            "schema": {
+                "page_id": {
+                    "type": "integer"
+                },
+                "content": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string",
+                    "nullable": true
+                }
+            }
+        },
+        {
+            "name": "search_pages",
+            "description": "Search for pages",
+            "schema": {
+                "query": {
+                    "type": "string"
+                },
+                "limit": {
+                    "type": "integer",
+                    "default": 10
+                }
+            }
+        }
+    ],
+    "config_schema": {
+        "type": "object",
+        "properties": {
+            "server_url": {
+                "type": "string",
+                "format": "uri",
+                "title": "Wiki.js Server URL",
+                "description": "Base URL of your Wiki.js instance"
+            },
+            "api_token": {
+                "type": "string",
+                "format": "password",
+                "title": "API Token",
+                "description": "Wiki.js API token"
+            }
+        },
+        "required": [
+            "server_url",
+            "api_token"
+        ]
+    }
+}
+

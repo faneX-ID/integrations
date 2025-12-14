@@ -1,0 +1,89 @@
+{
+    "schema_version": "2.0.0",
+    "domain": "mattermost",
+    "name": "Mattermost",
+    "version": "1.0.0",
+    "description": "Integration with Mattermost team communication platform via REST API.",
+    "min_core_version": "2025.12.0",
+    "logo": "https://mattermost.com/wp-content/uploads/2022/02/icon.png",
+    "documentation": "https://fanex-id.com/docs/integrations/mattermost",
+    "source_url": "https://github.com/faneX-ID/integrations/tree/main/mattermost",
+    "codeowners": [
+        "@faneX-Team"
+    ],
+    "is_system": false,
+    "connection_type": "cloud",
+    "capabilities": [
+        "communication",
+        "team_collaboration"
+    ],
+    "implementations": {
+        "python": "integration.py"
+    },
+    "requirements": [
+        "requests>=2.28.0"
+    ],
+    "exposed_services": [
+        {
+            "name": "send_message",
+            "description": "Send a message to a channel",
+            "schema": {
+                "channel_id": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        {
+            "name": "create_channel",
+            "description": "Create a channel",
+            "schema": {
+                "name": {
+                    "type": "string"
+                },
+                "display_name": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string",
+                    "enum": ["O", "P"],
+                    "default": "P",
+                    "description": "O = open, P = private"
+                }
+            }
+        },
+        {
+            "name": "get_user",
+            "description": "Get user information",
+            "schema": {
+                "user_id": {
+                    "type": "string"
+                }
+            }
+        }
+    ],
+    "config_schema": {
+        "type": "object",
+        "properties": {
+            "server_url": {
+                "type": "string",
+                "format": "uri",
+                "title": "Mattermost Server URL",
+                "description": "Base URL of your Mattermost instance"
+            },
+            "api_token": {
+                "type": "string",
+                "format": "password",
+                "title": "API Token",
+                "description": "Mattermost personal access token or bot token"
+            }
+        },
+        "required": [
+            "server_url",
+            "api_token"
+        ]
+    }
+}
+

@@ -66,3 +66,4 @@ class WebhookGenericIntegration(Integration):
         except Exception as e:
             self.logger.error(f"Failed to send webhook: {e}")
             raise
+

@@ -1,0 +1,132 @@
+{
+    "schema_version": "2.0.0",
+    "domain": "otobo",
+    "name": "Otobo",
+    "version": "1.0.0",
+    "description": "Integration with Otobo ticket system (Open Source). Create and manage tickets, users, and workflows.",
+    "min_core_version": "2025.12.0",
+    "logo": "https://otobo.org/images/otobo-logo.png",
+    "documentation": "https://fanex-id.com/docs/integrations/otobo",
+    "source_url": "https://github.com/faneX-ID/integrations/tree/main/otobo",
+    "codeowners": [
+        "@faneX-Team"
+    ],
+    "is_system": false,
+    "connection_type": "cloud",
+    "capabilities": [
+        "ticketing",
+        "automation"
+    ],
+    "implementations": {
+        "python": "integration.py"
+    },
+    "requirements": [
+        "requests>=2.28.0"
+    ],
+    "exposed_services": [
+        {
+            "name": "create_ticket",
+            "description": "Create a new ticket",
+            "schema": {
+                "title": {
+                    "type": "string"
+                },
+                "queue": {
+                    "type": "string"
+                },
+                "priority": {
+                    "type": "string",
+                    "enum": [
+                        "1 very low",
+                        "2 low",
+                        "3 normal",
+                        "4 high",
+                        "5 very high"
+                    ],
+                    "default": "3 normal"
+                },
+                "state": {
+                    "type": "string",
+                    "default": "new"
+                },
+                "customer_user": {
+                    "type": "string",
+                    "format": "email"
+                },
+                "article": {
+                    "type": "object",
+                    "description": "Initial article content"
+                }
+            }
+        },
+        {
+            "name": "get_ticket",
+            "description": "Get ticket information",
+            "schema": {
+                "ticket_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        {
+            "name": "update_ticket",
+            "description": "Update a ticket",
+            "schema": {
+                "ticket_id": {
+                    "type": "integer"
+                },
+                "fields": {
+                    "type": "object"
+                }
+            }
+        },
+        {
+            "name": "add_article",
+            "description": "Add an article to a ticket",
+            "schema": {
+                "ticket_id": {
+                    "type": "integer"
+                },
+                "subject": {
+                    "type": "string"
+                },
+                "body": {
+                    "type": "string"
+                }
+            }
+        }
+    ],
+    "config_schema": {
+        "type": "object",
+        "properties": {
+            "server_url": {
+                "type": "string",
+                "format": "uri",
+                "title": "Otobo Server URL",
+                "description": "Base URL of your Otobo instance"
+            },
+            "username": {
+                "type": "string",
+                "title": "Username",
+                "description": "Otobo API username"
+            },
+            "password": {
+                "type": "string",
+                "format": "password",
+                "title": "Password",
+                "description": "Otobo API password"
+            },
+            "default_queue": {
+                "type": "string",
+                "title": "Default Queue",
+                "description": "Default queue for ticket creation"
+            }
+        },
+        "required": [
+            "server_url",
+            "username",
+            "password"
+        ]
+    }
+}
+

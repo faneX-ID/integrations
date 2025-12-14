@@ -1,0 +1,222 @@
+{
+    "schema_version": "2.0.0",
+    "domain": "ai_assistant",
+    "name": "AI Assistant",
+    "version": "1.0.0",
+    "description": "AI-powered assistant integration supporting Gemini, ChatGPT, and Azure OpenAI (Microsoft Copilot) for intelligent workflows and admin queries.",
+    "min_core_version": "2025.12.0",
+    "logo": "https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/openai.svg",
+    "documentation": "https://fanex-id.com/docs/integrations/ai-assistant",
+    "source_url": "https://github.com/faneX-ID/integrations/tree/main/ai-assistant",
+    "codeowners": [
+        "@faneX-Team"
+    ],
+    "is_system": false,
+    "connection_type": "cloud",
+    "capabilities": [
+        "ai",
+        "workflow",
+        "automation",
+        "query"
+    ],
+    "implementations": {
+        "python": "integration.py"
+    },
+    "requirements": [
+        "openai>=1.0.0",
+        "google-generativeai>=0.3.0",
+        "requests>=2.28.0"
+    ],
+    "exposed_services": [
+        {
+            "name": "query",
+            "description": "Query the AI assistant with a question and optional context",
+            "schema": {
+                "question": {
+                    "type": "string",
+                    "description": "The question or prompt to send to the AI"
+                },
+                "provider": {
+                    "type": "string",
+                    "enum": ["gemini", "chatgpt", "azure", "auto"],
+                    "default": "auto",
+                    "description": "AI provider to use (auto selects based on config)"
+                },
+                "context": {
+                    "type": "object",
+                    "nullable": true,
+                    "description": "Additional context data to include in the prompt"
+                },
+                "system_prompt": {
+                    "type": "string",
+                    "nullable": true,
+                    "description": "Custom system prompt to override default"
+                },
+                "max_tokens": {
+                    "type": "integer",
+                    "nullable": true,
+                    "default": 2000,
+                    "description": "Maximum tokens in response"
+                },
+                "temperature": {
+                    "type": "number",
+                    "nullable": true,
+                    "default": 0.7,
+                    "description": "Temperature for response generation (0.0-2.0)"
+                }
+            }
+        },
+        {
+            "name": "analyze_logs",
+            "description": "Analyze log entries and provide insights",
+            "schema": {
+                "log_data": {
+                    "type": "array",
+                    "description": "Array of log entries to analyze"
+                },
+                "question": {
+                    "type": "string",
+                    "nullable": true,
+                    "description": "Specific question about the logs"
+                },
+                "provider": {
+                    "type": "string",
+                    "enum": ["gemini", "chatgpt", "auto"],
+                    "default": "auto"
+                }
+            }
+        },
+        {
+            "name": "enhance_workflow",
+            "description": "Use AI to enhance or optimize a workflow",
+            "schema": {
+                "workflow": {
+                    "type": "object",
+                    "description": "Workflow definition to enhance"
+                },
+                "goal": {
+                    "type": "string",
+                    "nullable": true,
+                    "description": "Goal for the enhancement"
+                },
+                "provider": {
+                    "type": "string",
+                    "enum": ["gemini", "chatgpt", "auto"],
+                    "default": "auto"
+                }
+            }
+        },
+        {
+            "name": "generate_workflow",
+            "description": "Generate a new workflow based on a description",
+            "schema": {
+                "description": {
+                    "type": "string",
+                    "description": "Description of the desired workflow"
+                },
+                "context": {
+                    "type": "object",
+                    "nullable": true,
+                    "description": "Additional context about available integrations and services"
+                },
+                "provider": {
+                    "type": "string",
+                    "enum": ["gemini", "chatgpt", "auto"],
+                    "default": "auto"
+                }
+            }
+        }
+    ],
+    "config_schema": {
+        "type": "object",
+        "properties": {
+            "default_provider": {
+                "type": "string",
+                "enum": ["gemini", "chatgpt", "azure"],
+                "default": "gemini",
+                "title": "Default AI Provider",
+                "description": "Default AI provider to use when 'auto' is selected"
+            },
+            "gemini_api_key": {
+                "type": "string",
+                "format": "password",
+                "title": "Gemini API Key",
+                "description": "Google Gemini API key (get from https://makersuite.google.com/app/apikey)"
+            },
+            "gemini_model": {
+                "type": "string",
+                "default": "gemini-pro",
+                "title": "Gemini Model",
+                "description": "Gemini model to use (e.g., gemini-pro, gemini-pro-vision)"
+            },
+            "chatgpt_api_key": {
+                "type": "string",
+                "format": "password",
+                "title": "ChatGPT API Key",
+                "description": "OpenAI API key (get from https://platform.openai.com/api-keys)"
+            },
+            "chatgpt_model": {
+                "type": "string",
+                "default": "gpt-4",
+                "title": "ChatGPT Model",
+                "description": "OpenAI model to use (e.g., gpt-4, gpt-3.5-turbo)"
+            },
+            "azure_openai_api_key": {
+                "type": "string",
+                "format": "password",
+                "title": "Azure OpenAI API Key",
+                "description": "Azure OpenAI API key (get from Azure Portal > Your Resource > Keys and Endpoint)"
+            },
+            "azure_openai_endpoint": {
+                "type": "string",
+                "format": "uri",
+                "title": "Azure OpenAI Endpoint",
+                "description": "Azure OpenAI endpoint URL (e.g., https://your-resource.openai.azure.com)"
+            },
+            "azure_openai_deployment": {
+                "type": "string",
+                "title": "Azure OpenAI Deployment Name",
+                "description": "Name of your Azure OpenAI deployment (e.g., gpt-4, gpt-35-turbo)"
+            },
+            "azure_openai_model": {
+                "type": "string",
+                "nullable": true,
+                "title": "Azure OpenAI Model Name",
+                "description": "Model name (optional, defaults to deployment name)"
+            },
+            "azure_openai_api_version": {
+                "type": "string",
+                "default": "2024-02-15-preview",
+                "title": "Azure OpenAI API Version",
+                "description": "API version to use (default: 2024-02-15-preview)"
+            },
+            "max_tokens": {
+                "type": "integer",
+                "default": 2000,
+                "title": "Max Tokens",
+                "description": "Maximum tokens for AI responses"
+            },
+            "temperature": {
+                "type": "number",
+                "default": 0.7,
+                "minimum": 0,
+                "maximum": 2,
+                "title": "Temperature",
+                "description": "Temperature for AI responses (0.0-2.0)"
+            },
+            "enable_workflow_enhancement": {
+                "type": "boolean",
+                "default": true,
+                "title": "Enable Workflow Enhancement",
+                "description": "Allow AI to enhance workflows"
+            },
+            "enable_log_analysis": {
+                "type": "boolean",
+                "default": true,
+                "title": "Enable Log Analysis",
+                "description": "Allow AI to analyze logs"
+            }
+        },
+        "required": []
+    }
+}

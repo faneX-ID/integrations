@@ -108,7 +108,7 @@ jobs:
         with:
           script: |
             const status = '${{ needs.validate.result }}';
-            
+
             if (status === 'success') {
               github.rest.issues.createComment({
                 issue_number: context.issue.number,
@@ -124,4 +124,3 @@ jobs:
                 body: "❌ **PR Validation Failed**\n\nPlease check the logs and fix the issues before merging."
               });
             }
-

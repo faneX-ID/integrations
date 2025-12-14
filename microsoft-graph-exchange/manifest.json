@@ -1,0 +1,113 @@
+{
+    "schema_version": "2.0.0",
+    "domain": "microsoft_graph_exchange",
+    "name": "Microsoft Graph Exchange",
+    "version": "1.0.0",
+    "description": "Microsoft Graph integration for Exchange Online email and calendar management. Requires microsoft_graph base integration.",
+    "min_core_version": "2025.12.0",
+    "logo": "https://docs.microsoft.com/en-us/media/logos/logo-ms-social.png",
+    "documentation": "https://fanex-id.com/docs/integrations/graph-exchange",
+    "source_url": "https://github.com/faneX-ID/integrations/tree/main/microsoft-graph-exchange",
+    "codeowners": [
+        "@faneX-Team"
+    ],
+    "is_system": false,
+    "connection_type": "cloud",
+    "capabilities": [
+        "email",
+        "calendar"
+    ],
+    "dependencies": [
+        "microsoft_graph"
+    ],
+    "implementations": {
+        "python": "integration.py"
+    },
+    "requirements": [
+        "requests>=2.28.0"
+    ],
+    "exposed_services": [
+        {
+            "name": "send_email",
+            "description": "Send an email via Exchange Online",
+            "schema": {
+                "to": {
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "format": "email"
+                    }
+                },
+                "subject": {
+                    "type": "string"
+                },
+                "body": {
+                    "type": "string"
+                },
+                "cc": {
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "format": "email"
+                    },
+                    "nullable": true
+                }
+            }
+        },
+        {
+            "name": "get_messages",
+            "description": "Get email messages",
+            "schema": {
+                "user_id": {
+                    "type": "string",
+                    "nullable": true
+                },
+                "folder": {
+                    "type": "string",
+                    "default": "inbox"
+                },
+                "limit": {
+                    "type": "integer",
+                    "default": 10
+                }
+            }
+        },
+        {
+            "name": "create_calendar_event",
+            "description": "Create a calendar event",
+            "schema": {
+                "subject": {
+                    "type": "string"
+                },
+                "start": {
+                    "type": "string",
+                    "format": "date-time"
+                },
+                "end": {
+                    "type": "string",
+                    "format": "date-time"
+                },
+                "attendees": {
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "format": "email"
+                    },
+                    "nullable": true
+                }
+            }
+        }
+    ],
+    "config_schema": {
+        "type": "object",
+        "properties": {
+            "default_from": {
+                "type": "string",
+                "format": "email",
+                "title": "Default From Address",
+                "description": "Default sender email address"
+            }
+        }
+    }
+}
+
