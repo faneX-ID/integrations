@@ -1,0 +1,285 @@
+{
+    "schema_version": "2.1.0",
+    "domain": "cloudflare",
+    "name": "Cloudflare",
+    "version": "1.0.0",
+    "description": "Integration for Cloudflare API. Manage DNS records, zones, and Cloudflare services.",
+    "min_core_version": "2025.12.0",
+    "is_system": false,
+    "connection_type": "cloud",
+    "logo": "https://raw.githubusercontent.com/faneX-ID/brands/master/core_integrations/cloudflare/icon.png",
+    "documentation": "https://fanex-id.com/docs/integrations/cloudflare",
+    "source_url": "https://github.com/faneX-ID/integrations/tree/main/cloudflare",
+    "codeowners": [
+        "@faneX-Team"
+    ],
+    "capabilities": [
+        "automation",
+        "dns_management",
+        "api_gateway"
+    ],
+    "implementations": {
+        "python": "integration.py"
+    },
+    "requirements": [
+        "cloudflare>=2.11.0"
+    ],
+    "config_schema": {
+        "type": "object",
+        "properties": {
+            "api_token": {
+                "type": "string",
+                "format": "password",
+                "title": "API Token",
+                "description": "Cloudflare API token with appropriate permissions"
+            },
+            "api_key": {
+                "type": "string",
+                "format": "password",
+                "title": "API Key",
+                "description": "Cloudflare API key (alternative to API token)",
+                "nullable": true
+            },
+            "email": {
+                "type": "string",
+                "format": "email",
+                "title": "Email",
+                "description": "Cloudflare account email (required if using API key)",
+                "nullable": true
+            }
+        },
+        "required": [
+            "api_token"
+        ]
+    },
+    "exposed_services": [
+        {
+            "name": "list_zones",
+            "description": "List all Cloudflare zones",
+            "schema": {
+                "name": {
+                    "type": "string",
+                    "description": "Filter by zone name",
+                    "nullable": true
+                },
+                "status": {
+                    "type": "string",
+                    "enum": [
+                        "active",
+                        "pending",
+                        "initializing",
+                        "moved",
+                        "deleted",
+                        "deactivated"
+                    ],
+                    "description": "Filter by zone status",
+                    "nullable": true
+                }
+            }
+        },
+        {
+            "name": "get_zone",
+            "description": "Get details of a specific zone",
+            "schema": {
+                "zone_id": {
+                    "type": "string",
+                    "description": "Zone ID"
+                }
+            },
+            "required": [
+                "zone_id"
+            ]
+        },
+        {
+            "name": "list_dns_records",
+            "description": "List DNS records for a zone",
+            "schema": {
+                "zone_id": {
+                    "type": "string",
+                    "description": "Zone ID"
+                },
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "A",
+                        "AAAA",
+                        "CNAME",
+                        "MX",
+                        "TXT",
+                        "NS",
+                        "SRV",
+                        "CAA"
+                    ],
+                    "description": "Filter by DNS record type",
+                    "nullable": true
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Filter by record name",
+                    "nullable": true
+                }
+            },
+            "required": [
+                "zone_id"
+            ]
+        },
+        {
+            "name": "create_dns_record",
+            "description": "Create a new DNS record",
+            "schema": {
+                "zone_id": {
+                    "type": "string",
+                    "description": "Zone ID"
+                },
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "A",
+                        "AAAA",
+                        "CNAME",
+                        "MX",
+                        "TXT",
+                        "NS",
+                        "SRV",
+                        "CAA"
+                    ],
+                    "description": "DNS record type"
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Record name (e.g., 'example.com' or 'subdomain.example.com')"
+                },
+                "content": {
+                    "type": "string",
+                    "description": "Record content (IP address, hostname, etc.)"
+                },
+                "ttl": {
+                    "type": "integer",
+                    "description": "TTL in seconds (1 = automatic)",
+                    "default": 1
+                },
+                "priority": {
+                    "type": "integer",
+                    "description": "Priority for MX records",
+                    "nullable": true
+                },
+                "proxied": {
+                    "type": "boolean",
+                    "description": "Whether the record is proxied through Cloudflare",
+                    "default": false
+                }
+            },
+            "required": [
+                "zone_id",
+                "type",
+                "name",
+                "content"
+            ]
+        },
+        {
+            "name": "update_dns_record",
+            "description": "Update an existing DNS record",
+            "schema": {
+                "zone_id": {
+                    "type": "string",
+                    "description": "Zone ID"
+                },
+                "record_id": {
+                    "type": "string",
+                    "description": "DNS record ID"
+                },
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "A",
+                        "AAAA",
+                        "CNAME",
+                        "MX",
+                        "TXT",
+                        "NS",
+                        "SRV",
+                        "CAA"
+                    ],
+                    "description": "DNS record type",
+                    "nullable": true
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Record name",
+                    "nullable": true
+                },
+                "content": {
+                    "type": "string",
+                    "description": "Record content",
+                    "nullable": true
+                },
+                "ttl": {
+                    "type": "integer",
+                    "description": "TTL in seconds",
+                    "nullable": true
+                },
+                "proxied": {
+                    "type": "boolean",
+                    "description": "Whether the record is proxied",
+                    "nullable": true
+                }
+            },
+            "required": [
+                "zone_id",
+                "record_id"
+            ]
+        },
+        {
+            "name": "delete_dns_record",
+            "description": "Delete a DNS record",
+            "schema": {
+                "zone_id": {
+                    "type": "string",
+                    "description": "Zone ID"
+                },
+                "record_id": {
+                    "type": "string",
+                    "description": "DNS record ID"
+                }
+            },
+            "required": [
+                "zone_id",
+                "record_id"
+            ]
+        },
+        {
+            "name": "purge_cache",
+            "description": "Purge Cloudflare cache for a zone",
+            "schema": {
+                "zone_id": {
+                    "type": "string",
+                    "description": "Zone ID"
+                },
+                "purge_everything": {
+                    "type": "boolean",
+                    "description": "Purge everything (if false, provide files or tags)",
+                    "default": false
+                },
+                "files": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "Specific URLs to purge",
+                    "nullable": true
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "Cache tags to purge",
+                    "nullable": true
+                }
+            },
+            "required": [
+                "zone_id"
+            ]
+        }
+    ]
+}

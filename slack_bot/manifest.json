@@ -1,0 +1,98 @@
+{
+    "schema_version": "2.1.0",
+    "domain": "slack_bot",
+    "name": "Slack Bot",
+    "version": "1.0.0",
+    "description": "Integration for Slack bots. Send messages and interact with Slack workspaces.",
+    "min_core_version": "2025.12.0",
+    "is_system": false,
+    "connection_type": "cloud",
+    "logo": "https://raw.githubusercontent.com/faneX-ID/brands/master/core_integrations/slack/icon.png",
+    "documentation": "https://fanex-id.com/docs/integrations/slack-bot",
+    "source_url": "https://github.com/faneX-ID/integrations/tree/main/slack_bot",
+    "codeowners": [
+        "@faneX-Team"
+    ],
+    "capabilities": [
+        "automation",
+        "notification",
+        "bot"
+    ],
+    "implementations": {
+        "python": "integration.py"
+    },
+    "requirements": [
+        "slack-sdk>=3.20.0"
+    ],
+    "config_schema": {
+        "type": "object",
+        "properties": {
+            "bot_token": {
+                "type": "string",
+                "format": "password",
+                "title": "Bot Token",
+                "description": "Slack bot token (xoxb-...)"
+            },
+            "app_token": {
+                "type": "string",
+                "format": "password",
+                "title": "App Token",
+                "description": "Slack app-level token (xapp-...) for Socket Mode (optional)",
+                "nullable": true
+            }
+        },
+        "required": [
+            "bot_token"
+        ]
+    },
+    "exposed_services": [
+        {
+            "name": "send_message",
+            "description": "Send a message to a Slack channel or DM",
+            "schema": {
+                "channel": {
+                    "type": "string",
+                    "description": "Slack channel ID (e.g., C1234567890) or channel name (e.g., #general)"
+                },
+                "message": {
+                    "type": "string",
+                    "description": "Message text to send"
+                },
+                "thread_ts": {
+                    "type": "string",
+                    "description": "Thread timestamp to reply in thread",
+                    "nullable": true
+                },
+                "blocks": {
+                    "type": "array",
+                    "description": "Slack Block Kit blocks for rich formatting",
+                    "nullable": true
+                }
+            },
+            "required": ["channel", "message"]
+        },
+        {
+            "name": "get_bot_status",
+            "description": "Get the status of the Slack bot",
+            "schema": {
+                "bot_id": {
+                    "type": "string",
+                    "description": "Bot ID (optional)",
+                    "nullable": true
+                }
+            }
+        },
+        {
+            "name": "register_with_interpreter",
+            "description": "Register this bot with the Bot Interpreter system component",
+            "schema": {
+                "bot_id": {
+                    "type": "string",
+                    "description": "Unique ID for this bot instance"
+                }
+            },
+            "required": ["bot_id"]
+        }
+    ]
+}
+

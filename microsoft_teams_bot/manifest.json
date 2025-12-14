@@ -1,0 +1,99 @@
+{
+    "schema_version": "2.1.0",
+    "domain": "microsoft_teams_bot",
+    "name": "Microsoft Teams Bot",
+    "version": "1.0.0",
+    "description": "Integration for Microsoft Teams bots. Send messages and interact with Teams channels.",
+    "min_core_version": "2025.12.0",
+    "is_system": false,
+    "connection_type": "cloud",
+    "logo": "https://raw.githubusercontent.com/faneX-ID/brands/master/core_integrations/microsoft_teams/icon.png",
+    "documentation": "https://fanex-id.com/docs/integrations/microsoft-teams-bot",
+    "source_url": "https://github.com/faneX-ID/integrations/tree/main/microsoft_teams_bot",
+    "codeowners": [
+        "@faneX-Team"
+    ],
+    "capabilities": [
+        "automation",
+        "notification",
+        "bot"
+    ],
+    "implementations": {
+        "python": "integration.py"
+    },
+    "requirements": [
+        "botbuilder-core>=4.15.0"
+    ],
+    "config_schema": {
+        "type": "object",
+        "properties": {
+            "app_id": {
+                "type": "string",
+                "title": "Microsoft App ID",
+                "description": "Application (client) ID from Azure AD"
+            },
+            "app_password": {
+                "type": "string",
+                "format": "password",
+                "title": "Microsoft App Password",
+                "description": "Application password from Azure AD"
+            },
+            "tenant_id": {
+                "type": "string",
+                "title": "Tenant ID",
+                "description": "Azure AD tenant ID (optional, uses common if not provided)",
+                "nullable": true
+            }
+        },
+        "required": [
+            "app_id",
+            "app_password"
+        ]
+    },
+    "exposed_services": [
+        {
+            "name": "send_message",
+            "description": "Send a message to a Teams channel or chat",
+            "schema": {
+                "channel_id": {
+                    "type": "string",
+                    "description": "Teams channel ID or chat ID"
+                },
+                "message": {
+                    "type": "string",
+                    "description": "Message text to send"
+                },
+                "message_type": {
+                    "type": "string",
+                    "enum": ["text", "card", "adaptive"],
+                    "description": "Type of message to send",
+                    "nullable": true
+                }
+            },
+            "required": ["channel_id", "message"]
+        },
+        {
+            "name": "get_bot_status",
+            "description": "Get the status of the Teams bot",
+            "schema": {
+                "bot_id": {
+                    "type": "string",
+                    "description": "Bot ID (optional)",
+                    "nullable": true
+                }
+            }
+        },
+        {
+            "name": "register_with_interpreter",
+            "description": "Register this bot with the Bot Interpreter system component",
+            "schema": {
+                "bot_id": {
+                    "type": "string",
+                    "description": "Unique ID for this bot instance"
+                }
+            },
+            "required": ["bot_id"]
+        }
+    ]
+}
+

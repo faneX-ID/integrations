@@ -1,0 +1,113 @@
+{
+    "schema_version": "2.1.0",
+    "domain": "discord_bot",
+    "name": "Discord Bot",
+    "version": "1.0.0",
+    "description": "Integration for Discord bots. Send messages and interact with Discord servers and channels.",
+    "min_core_version": "2025.12.0",
+    "is_system": false,
+    "connection_type": "cloud",
+    "logo": "https://raw.githubusercontent.com/faneX-ID/brands/master/core_integrations/discord/icon.png",
+    "documentation": "https://fanex-id.com/docs/integrations/discord-bot",
+    "source_url": "https://github.com/faneX-ID/integrations/tree/main/discord_bot",
+    "codeowners": [
+        "@faneX-Team"
+    ],
+    "capabilities": [
+        "automation",
+        "notification",
+        "bot"
+    ],
+    "implementations": {
+        "python": "integration.py"
+    },
+    "requirements": [
+        "discord.py>=2.3.0"
+    ],
+    "config_schema": {
+        "type": "object",
+        "properties": {
+            "bot_token": {
+                "type": "string",
+                "format": "password",
+                "title": "Bot Token",
+                "description": "Discord bot token from Discord Developer Portal"
+            },
+            "intents": {
+                "type": "object",
+                "properties": {
+                    "guilds": {
+                        "type": "boolean",
+                        "default": true,
+                        "description": "Enable guild (server) intents"
+                    },
+                    "messages": {
+                        "type": "boolean",
+                        "default": true,
+                        "description": "Enable message intents"
+                    },
+                    "message_content": {
+                        "type": "boolean",
+                        "default": false,
+                        "description": "Enable message content intents (requires privileged gateway intent)"
+                    }
+                },
+                "description": "Discord bot intents configuration",
+                "nullable": true
+            }
+        },
+        "required": [
+            "bot_token"
+        ]
+    },
+    "exposed_services": [
+        {
+            "name": "send_message",
+            "description": "Send a message to a Discord channel or DM",
+            "schema": {
+                "channel_id": {
+                    "type": "string",
+                    "description": "Discord channel ID or DM channel ID"
+                },
+                "message": {
+                    "type": "string",
+                    "description": "Message text to send"
+                },
+                "embed": {
+                    "type": "object",
+                    "description": "Discord embed object (optional)",
+                    "nullable": true
+                },
+                "reply_to_message_id": {
+                    "type": "string",
+                    "description": "Message ID to reply to",
+                    "nullable": true
+                }
+            },
+            "required": ["channel_id", "message"]
+        },
+        {
+            "name": "get_bot_status",
+            "description": "Get the status of the Discord bot",
+            "schema": {
+                "bot_id": {
+                    "type": "string",
+                    "description": "Bot ID (optional)",
+                    "nullable": true
+                }
+            }
+        },
+        {
+            "name": "register_with_interpreter",
+            "description": "Register this bot with the Bot Interpreter system component",
+            "schema": {
+                "bot_id": {
+                    "type": "string",
+                    "description": "Unique ID for this bot instance"
+                }
+            },
+            "required": ["bot_id"]
+        }
+    ]
+}
+
