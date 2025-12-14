@@ -49,7 +49,11 @@ def format_requirements(requirements: List[str]) -> str:
     """Format requirements list."""
     if not requirements:
         return "-"
-    return ", ".join(requirements)
+    # Truncate if too long
+    req_str = ", ".join(requirements)
+    if len(req_str) > 60:
+        return req_str[:57] + "..."
+    return req_str
 
 
 def generate_overview() -> str:
@@ -146,4 +150,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
