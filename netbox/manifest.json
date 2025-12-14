@@ -1,0 +1,192 @@
+{
+    "schema_version": "2.1.0",
+    "domain": "netbox",
+    "name": "NetBox",
+    "version": "1.0.0",
+    "description": "Integration for managing NetBox IPAM and DCIM via REST API.",
+    "min_core_version": "2025.12.0",
+    "is_system": false,
+    "connection_type": "cloud",
+    "logo": "https://netboxlabs.com/wp-content/uploads/2021/05/netbox-logo-full-color-dark-mode.svg",
+    "documentation": "https://fanex-id.com/docs/integrations/netbox",
+    "source_url": "https://github.com/faneX-ID/integrations/tree/main/netbox",
+    "codeowners": [
+        "@faneX-Team"
+    ],
+    "capabilities": [
+        "automation",
+        "monitoring",
+        "api_gateway"
+    ],
+    "implementations": {
+        "python": "integration.py"
+    },
+    "requirements": [
+        "requests>=2.28.0"
+    ],
+    "config_schema": {
+        "type": "object",
+        "properties": {
+            "base_url": {
+                "type": "string",
+                "format": "uri",
+                "title": "NetBox URL",
+                "description": "Base URL of your NetBox instance (e.g., https://netbox.example.com)"
+            },
+            "api_token": {
+                "type": "string",
+                "format": "password",
+                "title": "API Token",
+                "description": "NetBox API token (create in User > API Tokens)"
+            },
+            "verify_ssl": {
+                "type": "boolean",
+                "default": true,
+                "title": "Verify SSL",
+                "description": "Verify SSL certificate"
+            }
+        },
+        "required": [
+            "base_url",
+            "api_token"
+        ]
+    },
+    "exposed_services": [
+        {
+            "name": "get_devices",
+            "description": "Get list of devices from NetBox",
+            "schema": {
+                "site": {
+                    "type": "string",
+                    "description": "Filter by site name or slug",
+                    "nullable": true
+                },
+                "status": {
+                    "type": "string",
+                    "description": "Filter by device status (active, offline, planned, etc.)",
+                    "nullable": true
+                },
+                "limit": {
+                    "type": "integer",
+                    "default": 50,
+                    "description": "Maximum number of results"
+                }
+            }
+        },
+        {
+            "name": "get_device",
+            "description": "Get a specific device by ID or name",
+            "schema": {
+                "device_id": {
+                    "type": "string",
+                    "description": "Device ID or name"
+                }
+            }
+        },
+        {
+            "name": "get_ip_addresses",
+            "description": "Get list of IP addresses from NetBox",
+            "schema": {
+                "device": {
+                    "type": "string",
+                    "description": "Filter by device name",
+                    "nullable": true
+                },
+                "status": {
+                    "type": "string",
+                    "description": "Filter by IP status (active, reserved, etc.)",
+                    "nullable": true
+                },
+                "limit": {
+                    "type": "integer",
+                    "default": 50
+                }
+            }
+        },
+        {
+            "name": "get_virtual_machines",
+            "description": "Get list of virtual machines from NetBox",
+            "schema": {
+                "cluster": {
+                    "type": "string",
+                    "description": "Filter by cluster name",
+                    "nullable": true
+                },
+                "status": {
+                    "type": "string",
+                    "nullable": true
+                },
+                "limit": {
+                    "type": "integer",
+                    "default": 50
+                }
+            }
+        },
+        {
+            "name": "create_device",
+            "description": "Create a new device in NetBox",
+            "schema": {
+                "name": {
+                    "type": "string",
+                    "description": "Device name"
+                },
+                "device_type": {
+                    "type": "string",
+                    "description": "Device type ID or name"
+                },
+                "site": {
+                    "type": "string",
+                    "description": "Site name or slug"
+                },
+                "status": {
+                    "type": "string",
+                    "default": "active",
+                    "description": "Device status"
+                },
+                "role": {
+                    "type": "string",
+                    "description": "Device role name",
+                    "nullable": true
+                }
+            }
+        },
+        {
+            "name": "update_device",
+            "description": "Update an existing device",
+            "schema": {
+                "device_id": {
+                    "type": "string",
+                    "description": "Device ID or name"
+                },
+                "name": {
+                    "type": "string",
+                    "nullable": true
+                },
+                "status": {
+                    "type": "string",
+                    "nullable": true
+                },
+                "role": {
+                    "type": "string",
+                    "nullable": true
+                }
+            }
+        },
+        {
+            "name": "delete_device",
+            "description": "Delete a device from NetBox",
+            "schema": {
+                "device_id": {
+                    "type": "string",
+                    "description": "Device ID or name"
+                }
+            }
+        },
+        {
+            "name": "test_connection",
+            "description": "Test connection to NetBox instance",
+            "schema": {}
+        }
+    ]
+}
+
