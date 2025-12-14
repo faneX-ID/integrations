@@ -1,0 +1,180 @@
+{
+    "schema_version": "2.0.0",
+    "domain": "exchange_onprem",
+    "name": "Exchange On-Premises",
+    "version": "1.0.1",
+    "description": "Integration with Exchange On-Premises via EWS (Exchange Web Services) API.",
+    "min_core_version": "2025.12.0",
+    "is_system": true,
+    "connection_type": "internal",
+    "capabilities": [
+        "email",
+        "calendar",
+        "contacts"
+    ],
+    "implementations": {
+        "python": {
+            "file": "integration.py",
+            "default": false,
+            "requirements": [
+                "exchangelib>=5.0.0"
+            ],
+            "description": "Python implementation using exchangelib library. Works via EWS but has limitations."
+        },
+        "powershell": {
+            "file": "integration.ps1",
+            "default": true,
+            "requirements": [
+                "ExchangeOnlineManagement",
+                "Import-Module ExchangeOnlineManagement"
+            ],
+            "description": "PowerShell implementation using Exchange Management Shell. Recommended for full Exchange feature support."
+        }
+    },
+    "default_implementation": "powershell",
+    "source_url": "https://github.com/faneX-ID/core/tree/main/backend/app/system_integrations/exchange_onprem",
+    "ui_metadata": {
+        "implementation_badge": {
+            "python": {
+                "label": "Python",
+                "color": "3776ab",
+                "icon": "🐍"
+            },
+            "powershell": {
+                "label": "PowerShell",
+                "color": "012456",
+                "icon": "💻"
+            }
+        },
+        "implementation_info": {
+            "python": {
+                "file_extension": ".py",
+                "language": "Python",
+                "recommended_for": "EWS-based operations, cross-platform"
+            },
+            "powershell": {
+                "file_extension": ".ps1",
+                "language": "PowerShell",
+                "recommended_for": "Full Exchange Management Shell features"
+            }
+        }
+    },
+    "exposed_services": [
+        {
+            "name": "send_email",
+            "description": "Send an email via Exchange",
+            "schema": {
+                "to": {
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "format": "email"
+                    }
+                },
+                "subject": {
+                    "type": "string"
+                },
+                "body": {
+                    "type": "string"
+                },
+                "cc": {
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "format": "email"
+                    },
+                    "nullable": true
+                },
+                "attachments": {
+                    "type": "array",
+                    "items": {
+                        "type": "object"
+                    },
+                    "nullable": true
+                }
+            }
+        },
+        {
+            "name": "get_mailbox",
+            "description": "Get mailbox information",
+            "schema": {
+                "email": {
+                    "type": "string",
+                    "format": "email"
+                }
+            }
+        },
+        {
+            "name": "create_calendar_event",
+            "description": "Create a calendar event",
+            "schema": {
+                "subject": {
+                    "type": "string"
+                },
+                "start": {
+                    "type": "string",
+                    "format": "date-time"
+                },
+                "end": {
+                    "type": "string",
+                    "format": "date-time"
+                },
+                "attendees": {
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "format": "email"
+                    },
+                    "nullable": true
+                }
+            }
+        },
+        {
+            "name": "get_calendar_events",
+            "description": "Get calendar events",
+            "schema": {
+                "start_date": {
+                    "type": "string",
+                    "format": "date"
+                },
+                "end_date": {
+                    "type": "string",
+                    "format": "date"
+                }
+            }
+        }
+    ],
+    "config_schema": {
+        "type": "object",
+        "properties": {
+            "server_url": {
+                "type": "string",
+                "format": "uri",
+                "title": "Exchange Server URL",
+                "description": "Exchange Web Services URL (e.g., https://mail.example.com/EWS/Exchange.asmx)"
+            },
+            "username": {
+                "type": "string",
+                "title": "Username",
+                "description": "Exchange username (domain\\username or email)"
+            },
+            "password": {
+                "type": "string",
+                "format": "password",
+                "title": "Password",
+                "description": "Exchange password"
+            },
+            "default_from": {
+                "type": "string",
+                "format": "email",
+                "title": "Default From Address",
+                "description": "Default sender email address"
+            }
+        },
+        "required": [
+            "server_url",
+            "username",
+            "password"
+        ]
+    }
+}

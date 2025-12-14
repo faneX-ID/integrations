@@ -1,0 +1,142 @@
+{
+    "schema_version": "2.1.0",
+    "domain": "docker",
+    "name": "Docker",
+    "version": "1.0.2",
+    "description": "Docker integration for managing containers and images on remote Docker hosts.",
+    "min_core_version": "2025.12.0",
+    "is_system": true,
+    "connection_type": "local",
+    "capabilities": [
+        "automation",
+        "monitoring",
+        "system_core"
+    ],
+    "implementations": {
+        "python": {
+            "file": "integration.py",
+            "default": true,
+            "requirements": [
+                "docker>=6.0.0"
+            ]
+        }
+    },
+    "default_implementation": "python",
+    "config_schema": {
+        "type": "object",
+        "properties": {
+            "default_timeout": {
+                "type": "integer",
+                "default": 60,
+                "title": "Default Timeout (seconds)",
+                "description": "Default timeout for Docker operations in seconds"
+            }
+        }
+    },
+    "exposed_services": [
+        {
+            "name": "list_containers",
+            "description": "List containers on a Docker host",
+            "schema": {
+                "host": {
+                    "type": "string",
+                    "description": "Docker host (IP address or hostname, or 'unix:///var/run/docker.sock' for local)"
+                },
+                "all": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Show all containers (including stopped)"
+                }
+            }
+        },
+        {
+            "name": "start_container",
+            "description": "Start a container",
+            "schema": {
+                "host": {
+                    "type": "string",
+                    "description": "Docker host"
+                },
+                "container_id": {
+                    "type": "string",
+                    "description": "Container ID or name"
+                }
+            }
+        },
+        {
+            "name": "stop_container",
+            "description": "Stop a container",
+            "schema": {
+                "host": {
+                    "type": "string",
+                    "description": "Docker host"
+                },
+                "container_id": {
+                    "type": "string",
+                    "description": "Container ID or name"
+                },
+                "timeout": {
+                    "type": "integer",
+                    "description": "Timeout in seconds before killing the container",
+                    "nullable": true
+                }
+            }
+        },
+        {
+            "name": "restart_container",
+            "description": "Restart a container",
+            "schema": {
+                "host": {
+                    "type": "string",
+                    "description": "Docker host"
+                },
+                "container_id": {
+                    "type": "string",
+                    "description": "Container ID or name"
+                },
+                "timeout": {
+                    "type": "integer",
+                    "nullable": true
+                }
+            }
+        },
+        {
+            "name": "get_container_stats",
+            "description": "Get container statistics",
+            "schema": {
+                "host": {
+                    "type": "string",
+                    "description": "Docker host"
+                },
+                "container_id": {
+                    "type": "string",
+                    "description": "Container ID or name"
+                }
+            }
+        },
+        {
+            "name": "get_container_logs",
+            "description": "Get container logs",
+            "schema": {
+                "host": {
+                    "type": "string",
+                    "description": "Docker host"
+                },
+                "container_id": {
+                    "type": "string",
+                    "description": "Container ID or name"
+                },
+                "tail": {
+                    "type": "integer",
+                    "default": 100,
+                    "description": "Number of lines to return"
+                },
+                "since": {
+                    "type": "string",
+                    "description": "Show logs since timestamp (RFC3339) or relative (e.g., '10m', '1h')",
+                    "nullable": true
+                }
+            }
+        }
+    ]
+}
