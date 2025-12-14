@@ -207,4 +207,3 @@ class HomeAssistantIntegration(Integration):
         except requests.exceptions.RequestException as e:
             self.logger.error(f"Failed to connect to Home Assistant: {e}")
             return {"success": False, "error": str(e)}
-
