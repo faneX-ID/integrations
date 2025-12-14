@@ -346,4 +346,3 @@ class NetBoxIntegration(Integration):
                 "netbox_version": result["data"].get("netbox-version"),
             }
         return result
-
