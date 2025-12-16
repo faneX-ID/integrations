@@ -1,4 +1,4 @@
-# 🛒 faneX-ID Standard Integrations
+# faneX-ID Standard Integrations 🛒
 
 [![Addon Validation](https://github.com/faneX-ID/integrations/actions/workflows/ci.yml/badge.svg)](https://github.com/faneX-ID/integrations/actions/workflows/ci.yml)
 
@@ -6,9 +6,7 @@
 
 This repository hosts the certified, battery-included integrations that ship (or are available) for faneX-ID.
 
----
-
-## 📦 Available Integrations
+## Available Integrations 📦
 
 **Total: 0 integrations**
 
