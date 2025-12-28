@@ -1,9 +1,11 @@
-from services.integration_base import Integration
-from services.service_registry import service_registry
+import base64
 import logging
+
 import requests
 from requests.auth import HTTPBasicAuth
-import base64
+from services.integration_base import Integration
+from services.service_registry import service_registry
+
 
 class BitwardenIntegration(Integration):
     async def async_setup(self):

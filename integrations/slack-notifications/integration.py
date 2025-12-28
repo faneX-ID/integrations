@@ -1,8 +1,10 @@
+import json
+import logging
+
+import requests
 from services.integration_base import Integration
 from services.service_registry import service_registry
-import logging
-import requests
-import json
+
 
 class SlackIntegration(Integration):
     async def async_setup(self):

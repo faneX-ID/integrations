@@ -1,9 +1,10 @@
+import json
+import logging
+import os
+from typing import Any, Dict, List, Optional
+
 from services.integration_base import Integration
 from services.service_registry import service_registry
-import logging
-import json
-from typing import Dict, Any, Optional, List
-import os
 
 # Import AI helper
 try:

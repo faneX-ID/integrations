@@ -6,11 +6,11 @@ Provides Slack bot functionality for sending messages.
 import logging
 from typing import Any, Dict, Optional
 
-from slack_sdk import WebClient
-from slack_sdk.errors import SlackApiError
+from services.event_bus import event_bus
 from services.integration_base import Integration
 from services.service_registry import service_registry
-from services.event_bus import event_bus
+from slack_sdk import WebClient
+from slack_sdk.errors import SlackApiError
 
 logger = logging.getLogger(__name__)
 

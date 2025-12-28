@@ -2,9 +2,9 @@
 AI Helper - Shared functionality for Gemini, ChatGPT, and Azure OpenAI integrations.
 Similar to Home Assistant's AI helper pattern.
 """
-import logging
-from typing import Dict, Any, Optional
 import json
+import logging
+from typing import Any, Dict, Optional
 
 
 class AIHelper:

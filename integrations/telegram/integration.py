@@ -6,11 +6,11 @@ Provides Telegram bot functionality for sending and receiving messages.
 import logging
 from typing import Any, Dict, Optional
 
-from telegram import Bot
-from telegram.error import TelegramError
+from services.event_bus import event_bus
 from services.integration_base import Integration
 from services.service_registry import service_registry
-from services.event_bus import event_bus
+from telegram import Bot
+from telegram.error import TelegramError
 
 logger = logging.getLogger(__name__)
 

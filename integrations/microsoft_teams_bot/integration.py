@@ -6,9 +6,9 @@ Provides Microsoft Teams bot functionality for sending messages.
 import logging
 from typing import Any, Dict, Optional
 
+from services.event_bus import event_bus
 from services.integration_base import Integration
 from services.service_registry import service_registry
-from services.event_bus import event_bus
 
 logger = logging.getLogger(__name__)
 

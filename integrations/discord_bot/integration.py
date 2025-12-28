@@ -13,9 +13,9 @@ except ImportError:
     discord = None
     commands = None
 
+from services.event_bus import event_bus
 from services.integration_base import Integration
 from services.service_registry import service_registry
-from services.event_bus import event_bus
 
 logger = logging.getLogger(__name__)
 

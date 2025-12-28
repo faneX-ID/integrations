@@ -6,9 +6,9 @@ Scans all integration directories and generates a comprehensive overview.
 
 import json
 import os
+from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional
-from datetime import datetime
 
 REPO_ROOT = Path(__file__).parent.parent.parent
 

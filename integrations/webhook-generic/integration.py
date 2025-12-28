@@ -1,7 +1,9 @@
+import logging
+
+import requests
 from services.integration_base import Integration
 from services.service_registry import service_registry
-import logging
-import requests
+
 
 class WebhookGenericIntegration(Integration):
     async def async_setup(self):
