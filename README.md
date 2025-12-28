@@ -1,4 +1,4 @@
-# faneX-ID Standard Integrations 🛒
+# 🛒 faneX-ID Standard Integrations
 
 [![Addon Validation](https://github.com/faneX-ID/integrations/actions/workflows/ci.yml/badge.svg)](https://github.com/faneX-ID/integrations/actions/workflows/ci.yml)
 
@@ -6,7 +6,9 @@
 
 This repository hosts the certified, battery-included integrations that ship (or are available) for faneX-ID.
 
-## Available Integrations 📦
+---
+
+## 📦 Available Integrations
 
 **Total: 0 integrations**
 
@@ -35,4 +37,4 @@ This project is licensed under the GNU Affero General Public License v3.0 (AGPL-
 
 ---
 
-*Last updated: 2025-12-14 22:53:17 UTC*
+*Last updated: 2025-12-28 19:37:08 UTC*
