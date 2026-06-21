@@ -8,7 +8,6 @@ from typing import Any, Dict, Optional
 
 import requests
 from services.integration_base import Integration
-from services.service_registry import service_registry
 
 logger = logging.getLogger(__name__)
 

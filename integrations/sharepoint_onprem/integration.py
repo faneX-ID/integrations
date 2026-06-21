@@ -5,7 +5,7 @@ Provides integration with SharePoint On-Premises via REST API.
 
 import base64
 import logging
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
 import requests
 from requests_ntlm import HttpNtlmAuth

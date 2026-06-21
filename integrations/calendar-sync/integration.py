@@ -1,6 +1,3 @@
-import logging
-from datetime import datetime
-from typing import Optional
 
 import requests
 from services.integration_base import Integration

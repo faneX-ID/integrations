@@ -1,5 +1,4 @@
 import base64
-import logging
 
 import requests
 from requests.auth import HTTPBasicAuth

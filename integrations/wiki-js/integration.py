@@ -1,4 +1,3 @@
-import logging
 
 import requests
 from services.integration_base import Integration

@@ -4,12 +4,11 @@ Integration for managing VMware ESXi hosts and virtual machines via vSphere REST
 """
 
 import logging
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
 import requests
 from requests.auth import HTTPBasicAuth
 from services.integration_base import Integration
-from services.service_registry import service_registry
 
 logger = logging.getLogger(__name__)
 

@@ -1,4 +1,3 @@
-import logging
 
 from services.integration_base import Integration
 from services.service_registry import service_registry

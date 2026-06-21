@@ -4,11 +4,10 @@ Provides control and monitoring of Home Assistant devices and services via REST 
 """
 
 import logging
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
 import requests
 from services.integration_base import Integration
-from services.service_registry import service_registry
 
 logger = logging.getLogger(__name__)
 

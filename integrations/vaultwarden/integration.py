@@ -4,10 +4,8 @@ This is a helper integration that references the bitwarden integration.
 Vaultwarden uses a Bitwarden-compatible API, so all functionality
 is provided by the bitwarden integration.
 """
-import logging
 
 from services.integration_base import Integration
-from services.service_registry import service_registry
 
 
 class VaultwardenIntegration(Integration):

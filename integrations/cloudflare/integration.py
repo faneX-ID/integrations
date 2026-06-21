@@ -4,7 +4,7 @@ Provides DNS management and Cloudflare API functionality.
 """
 
 import logging
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
 try:
     import CloudFlare
@@ -12,7 +12,6 @@ except ImportError:
     CloudFlare = None
 
 from services.integration_base import Integration
-from services.service_registry import service_registry
 
 logger = logging.getLogger(__name__)
 

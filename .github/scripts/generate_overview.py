@@ -5,7 +5,6 @@ Scans all integration directories and generates a comprehensive overview.
 """
 
 import json
-import os
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional
@@ -127,8 +126,8 @@ def generate_overview() -> str:
         "",
         "This project is licensed under the GNU Affero General Public License v3.0 (AGPL-3.0) - see the [LICENSE](LICENSE) file for details.",
         "",
-        f"---",
-        f"",
+        "---",
+        "",
         f"*Last updated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S UTC')}*",
     ])
 

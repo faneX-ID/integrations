@@ -1,8 +1,6 @@
 import base64
-import logging
 
 import requests
-from requests.auth import HTTPBasicAuth
 from services.integration_base import Integration
 from services.service_registry import service_registry
 
